@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0d9488"/>
 <title>Dr. Blessin's Dental Studio</title>
 <link rel="manifest" href="/manifest.json"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   --bg:#f4f6fb;--surface:#fff;--border:#e4e8f0;
@@ -426,8 +426,80 @@ input[readonly]{background:var(--bg);color:var(--muted);cursor:default}
 <script>
 const SUPABASE_URL = 'https://bpatdayxcyazozdqbasf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Direct REST API wrapper — no library dependency issues
+const sb = {
+  _h: () => ({
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  }),
+  _url: (table) => SUPABASE_URL + '/rest/v1/' + table,
+  table: (name) => new SbQuery(name)
+};
+
+class SbQuery {
+  constructor(name) {
+    this.name = name;
+    this._sel = '*';
+    this._filters = [];
+    this._ord = null;
+    this._asc = true;
+    this._from = null;
+    this._to = null;
+    this._cnt = null;
+    this._limit = null;
+    this._prefer = 'return=representation';
+  }
+  select(s, opts) {
+    this._sel = s || '*';
+    if (opts && opts.count) this._cnt = opts.count;
+    return this;
+  }
+  order(col, opts) { this._ord = col; this._asc = opts ? (opts.ascending !== false) : true; return this; }
+  range(from, to) { this._from = from; this._to = to; return this; }
+  eq(col, val) { this._filters.push(`${col}=eq.${encodeURIComponent(val)}`); return this; }
+  ilike(col, val) { this._filters.push(`${col}=ilike.${encodeURIComponent(val)}`); return this; }
+  limit(n) { this._limit = n; return this; }
+  upsert(data, opts) { return this._mutate('POST', data, 'resolution=merge-duplicates'); }
+  insert(data) { return this._mutate('POST', data); }
+  update(data) { return this._mutate('PATCH', data); }
+  delete() { return this._mutate('DELETE', null); }
+  async _mutate(method, data, extra) {
+    let url = sb._url(this.name);
+    const params = [...this._filters];
+    if (extra) params.push(extra);
+    if (params.length) url += '?' + params.join('&');
+    const headers = sb._h();
+    if (extra || method === 'POST') headers['Prefer'] = 'return=representation';
+    if (method === 'PATCH' || method === 'DELETE') headers['Prefer'] = 'return=representation';
+    try {
+      const r = await fetch(url, {
+        method,
+        headers,
+        body: data ? JSON.stringify(Array.isArray(data) ? data : [data]) : undefined
+      });
+      const json = r.ok ? await r.json().catch(()=>[]) : [];
+      if (!r.ok) return { data: null, error: { message: await r.text() }, count: 0 };
+      return { data: json, error: null, count: json.length };
+    } catch(e) { return { data: null, error: { message: e.message }, count: 0 }; }
+  }
+  async execute() {
+    let url = sb._url(this.name) + '?select=' + this._sel;
+    for (const f of this._filters) url += '&' + f;
+    if (this._ord) url += '&order=' + this._ord + (this._asc ? '.asc' : '.desc');
+    const headers = sb._h();
+    if (this._cnt) headers['Prefer'] = 'count=exact';
+    if (this._from !== null && this._to !== null) headers['Range'] = this._from + '-' + this._to;
+    try {
+      const r = await fetch(url, { headers });
+      const count = this._cnt ? parseInt(r.headers.get('content-range')?.split('/')[1] || '0') : 0;
+      const json = await r.json().catch(()=>[]);
+      if (!r.ok) return { data: [], error: json, count: 0 };
+      return { data: Array.isArray(json) ? json : [], error: null, count };
+    } catch(e) { return { data: [], error: { message: e.message }, count: 0 }; }
+  }
+}
 
 const TREATMENTS  = ["10PA", "10PA, Advised RCT", "10PA, Cleaning", "10PA, Cleaning, Composite Filling", "10PA, Cleaning, ZOe", "10PA, Composite Filling", "10PA, Consult", "10PA, ERIO, ZOe", "10PA, Extraction", "10PA, GIC Filling", "10PA, ZOe", "ANTIBIOTIC PASTE, BMP, ZOe", "Advised RCT", "Advised RCT, Advised extraction", "Advised extraction", "Advised extraction, Cleaning", "Advised extraction, Consult", "BMP", "Bonding Agent, Cleaning", "CCP", "CHECK UP", "CHECK UP, Ortho appointment", "CHECK UP, RETAINER", "CROWN CUTTING", "Calcium Hychoidl Placed", "Calcium Hychoidl Placed, ERIO", "Calcium Hychoidl Placed, GIC Filling", "Calcium Hychoidl Placed, RCT", "Cleaning", "Cleaning, Composite Filling", "Cleaning, Extraction", "Cleaning, GIC Filling", "Cleaning, Ortho appointment", "Composite Filling", "Composite Filling, GIC Filling", "Consult", "Consult, Ortho appointment", "Consult, Plpectomy", "Crown Cementation", "Crown Cementation, PFM", "Crown Recementation", "Crown Recementation, GIC Filling", "DENTURE", "DENTURE, IMPRESION", "DENTURE, Try In", "Debridement", "Denture Consult", "Dycal + GIC Filling", "Dycal + GIC Filling, GIC Filling", "Dycal+ZOe", "Dycal+ZOe, GIC Filling", "ERCO", "ERCO, ZOe", "ERIO", "ERIO, ZOe", "Extraction", "Flexible Denture", "Frenectomy", "GIC Filling", "GIC Filling, Permanent", "GIC Filling, RCT Obturation Done", "GIC Filling, Refilling", "GIC Filling, ZOe", "Grinding", "IMPLANT CONSULT", "IMPRESION", "IMPRESION, RETAINER", "IPC", "Irrigation", "Ketac Molar Filling", "Opaidectomy Done", "Ortho appointment", "Ortho appointment, RETAINER", "PFEM Bridge", "PFM Crown", "Plpectomy", "Plpectomy, Refilling", "RCT", "RCT Obturation Done", "RCT, RCT Obturation Done", "RCT, ZOe", "RETAINER", "S.S CROWN", "Suture Removal", "Try In", "ZOe", "metal Crown"];
 const CONSULTANTS = ["Consultant", "Dr .Nidhi", "Dr. Arya", "Dr. Godwin", "Dr. Maban", "Dr. Meghali", "Dr. Rahul", "Dr.Farzan"];
