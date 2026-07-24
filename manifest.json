@@ -1,14 +1,1 @@
-{
-  "name": "Dr. Blessin's Dental Studio",
-  "short_name": "Dental Studio",
-  "description": "Patient records management for Dr. Blessin's Dental Studio",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d9488",
-  "orientation": "any",
-  "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
+{"name":"Dr. Blessin's","short_name":"Dental","start_url":"/","display":"standalone","theme_color":"#0d9488"}
