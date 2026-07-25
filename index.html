@@ -533,23 +533,23 @@ async function loadData(){
 }
 
 function init(){
-  // Hide loading screen first thing
-  document.getElementById('loading-screen').style.display='none';
-  document.getElementById('av-date').value=new Date().toISOString().split('T')[0];
-  // Load data async
   var sb=document.getElementById('status-bar');
-  if(sb)sb.textContent='Connecting to database…';
-  loadData().then(function(){
-    filterDir();
-    applyRec();
-    if(sb)sb.style.display='none';
-    showToast('✓ '+patients.length+' patients loaded','success');
-  }).catch(function(e){
-    if(sb){sb.textContent='Error: '+e.message+' — Refresh to retry';sb.style.background='#dc2626';}
-    showToast('Error: '+e.message,'error');
-  });
+  try{
+    document.getElementById('loading-screen').style.display='none';
+    if(sb)sb.textContent='Step1:loading...';
+    loadData().then(function(){
+      if(sb)sb.textContent='Step2:'+patients.length+'pts '+visits.length+'vis';
+      try{filterDir();}catch(e){if(sb)sb.textContent='filterDir err:'+e.message;return;}
+      try{applyRec();}catch(e){if(sb)sb.textContent='applyRec err:'+e.message;return;}
+      if(sb)sb.style.display='none';
+      showToast('Ready - '+patients.length+' patients','success');
+    }).catch(function(e){
+      if(sb){sb.textContent='loadData err:'+e.message;sb.style.background='#dc2626';}
+    });
+  }catch(e){
+    if(sb){sb.textContent='init err:'+e.message;sb.style.background='#dc2626';}
+  }
 }
-
 function setDoctorMode(v){
   isDoctor=v;
   document.querySelectorAll('.doctor-only').forEach(el=>el.style.display=v?'':'none');
