@@ -569,8 +569,8 @@ function saveConsultants(list) {
 }
 
 function rebuildDropdowns() {
-  const treatments = getTreatments();
-  const consultants = getConsultants();
+  const treatments = allTreatments && allTreatments.length ? allTreatments : getTreatments();
+  const consultants = allConsultants && allConsultants.length ? allConsultants : getConsultants();
 
   // Rebuild all treatment selects
   ['av-treatment','edit-treatment','rec-treat'].forEach(id => {
@@ -620,7 +620,7 @@ function paginate(id, pages, cur, cb) {
   }
   h+='<button class="pb" '+(cur===pages?'disabled':'')+' data-p="'+(cur+1)+'">›</button>';
   el.innerHTML = h;
-  el.onclick=function(e){var b=e.target.closest('[data-p]');if(b&&!b.disabled){(cb)(parseInt(b.dataset.p));}};
+  el.onclick=function(e){var b=e.target.closest('[data-p]');if(b&&!b.disabled){cb(parseInt(b.dataset.p));}};
 }
 
 function rebuildStats() {
@@ -945,7 +945,9 @@ function renderDir(){
       <td><input class="cell-input" value="${p.phone||''}" placeholder="—" onchange="updP(${idx},'phone',this.value)"/></td>
       <td><span class="td-v">${p.visits||0}</span></td>
       ${showTotal?`<td class="doctor-only" style="text-align:right;font-weight:700;color:${p.total?'var(--green)':'var(--muted)'}">${fmtAmt(p.total)}</td>`:''}
-      <td><button style="padding:3px 8px;font-size:11px;background:var(--teal-l);color:var(--teal);border:none;border-radius:6px;cursor:pointer" onclick="viewFromDir('${(p.name||'').replace(/'/g,"\\'")}')" >→</button></td>
+      <td><button style="padding:3px 8px;font-size:11px;background:var(--teal-l);color:var(--teal);border:none;border-radius:6px;cursor:pointer" onclick="viewFromDir('${(p.name||'').replace(/'/g,"\\'")}')">→</button>
+      ${(p.visits||0)===0?`<button style="padding:3px 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer" onclick="deletePatient('${p.pid}','${(p.name||'').replace(/'/g,\"\\'\")}')">✕</button>`:''}
+    </td>
     </tr>`;
   }).join('');
 
