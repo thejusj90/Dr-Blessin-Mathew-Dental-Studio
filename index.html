@@ -928,7 +928,7 @@ function renderOverview(){
     <div class="stat purple"><div class="val">₹${(tF/100000).toFixed(1)}L</div><div class="lbl">Dr Fees</div></div>
     <div class="stat amber"><div class="val">₹${(tL/1000).toFixed(0)}K</div><div class="lbl">Lab Costs</div></div>`;
   const years=[...new Set(visits.filter(v=>v.visit_date).map(v=>v.visit_date.slice(0,4)))].sort();
-  document.getElementById('year-tabs').innerHTML='<button class="ytab active" onclick="setChartYear('all',this)">All</button>'+years.map(y=>`<button class="ytab" onclick="setChartYear('${y}',this)">${y}</button>`).join('');
+  document.getElementById('year-tabs').innerHTML='<button class="ytab active" onclick="setChartYear(&#39;all&#39;,this)">All</button>'+years.map(function(y){return '<button class="ytab" onclick="setChartYear(&#39;'+y+'&#39;,this)">'+y+'</button>';}).join('');
   const tc={};visits.forEach(v=>{if(v.treatment)tc[v.treatment]=(tc[v.treatment]||0)+1});
   const tt=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,10);const mt=tt[0]?.[1]||1;
   document.getElementById('ov-treatments').innerHTML=tt.map(([t,n])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${t}</span><span style="color:var(--muted);font-weight:700">${n}</span></div><div style="background:var(--border);border-radius:3px;height:4px"><div style="background:var(--teal);border-radius:3px;height:4px;width:${(n/mt*100).toFixed(0)}%"></div></div></div>`).join('');
