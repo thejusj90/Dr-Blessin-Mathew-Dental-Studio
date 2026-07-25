@@ -505,33 +505,32 @@ function rebuildStats(){
 }
 
 async function loadData(){
-  const sb2=document.getElementById('status-bar');
-  try{
-    // Load patients
-    if(sb2)sb2.textContent='Loading patients…';
-    const {data:pd,error:pe}=await _sb.from('patients').select('id,pid,name,gender,age,phone').neq('pid','SETTINGS').order('pid');
-    if(pe)throw pe;
-    patients=pd||[];
+  var sb2=document.getElementById('status-bar');
+  var h={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
 
-    // Load settings
-    const {data:sd}=await _sb.from('patients').select('age,phone').eq('pid','SETTINGS').single();
-    if(sd){
-      try{if(sd.age)allTreatments=JSON.parse(sd.age)}catch(e){}
-      try{if(sd.phone)allConsultants=JSON.parse(sd.phone)}catch(e){}
-    }
-    rebuildDropdowns();
+  // Load patients - exactly like test.html
+  if(sb2)sb2.textContent='Loading patients…';
+  var rp=await fetch(SB_URL+'/rest/v1/patients?select=id,pid,name,gender,age,phone&pid=neq.SETTINGS&order=pid.asc&limit=1000',{headers:h});
+  var dp=await rp.json();
+  patients=Array.isArray(dp)?dp:[];
 
-    // Load visits
-    if(sb2)sb2.textContent='Loading visits…';
-    const {data:vd,error:ve}=await _sb.from('visits').select('id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks').order('visit_date',{ascending:false});
-    if(ve)throw ve;
-    visits=vd||[];
-
-    rebuildStats();
-  }catch(e){
-    if(sb2){sb2.textContent='Error: '+e.message;sb2.style.background='#dc2626';}
-    throw e;
+  // Load settings
+  var rs=await fetch(SB_URL+'/rest/v1/patients?pid=eq.SETTINGS&select=age,phone&limit=1',{headers:h});
+  var ds=await rs.json();
+  if(Array.isArray(ds)&&ds.length){
+    try{if(ds[0].age)allTreatments=JSON.parse(ds[0].age)}catch(e){}
+    try{if(ds[0].phone)allConsultants=JSON.parse(ds[0].phone)}catch(e){}
   }
+  rebuildDropdowns();
+
+  // Load visits
+  if(sb2)sb2.textContent='Loading visits…';
+  var rv=await fetch(SB_URL+'/rest/v1/visits?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc&limit=2500',{headers:h});
+  var dv=await rv.json();
+  visits=Array.isArray(dv)?dv:[];
+
+  rebuildStats();
+  if(sb2)sb2.style.display='none';
 }
 
 function init(){
