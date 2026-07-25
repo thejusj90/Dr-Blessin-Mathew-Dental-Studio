@@ -212,6 +212,13 @@ input[readonly]{background:var(--bg);color:var(--muted);cursor:default}
 </style>
 </head>
 <body>
+<script>
+// Force hide loading screen after 3 seconds no matter what
+window._forceHide = setTimeout(function(){
+  var ls = document.getElementById('loading-screen');
+  if(ls) ls.style.display='none';
+}, 3000);
+</script>
 
 <!-- Loading -->
 <div id="loading-screen">
@@ -740,13 +747,19 @@ async function loadData() {
 
 async function init() {
   if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});}
-  const _t=setTimeout(()=>{document.getElementById('loading-screen').style.display='none';showToast('Connection slow','error');},15000);
-  await loadData();
-  clearTimeout(_t);
-  rebuildDropdowns();
+  // Hide loading screen immediately
   document.getElementById('loading-screen').style.display='none';
+  clearTimeout(window._forceHide);
   document.getElementById('av-date').value=new Date().toISOString().split('T')[0];
-  filterDir();applyRec();
+  // Load data in background
+  loadData().then(()=>{
+    rebuildDropdowns();
+    filterDir();
+    applyRec();
+    if(activeP) showPatient(activeP);
+  }).catch(e=>{
+    showToast('Error: '+e.message,'error');
+  });
 }
 
 function showPage(id, btn) {
