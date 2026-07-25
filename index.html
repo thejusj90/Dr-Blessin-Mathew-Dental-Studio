@@ -152,7 +152,6 @@ textarea{resize:vertical;min-height:60px}
 .merge-select{width:16px;height:16px;cursor:pointer;accent-color:var(--teal)}
 @media(max-width:600px){{nav{{padding:0 8px;gap:4px}}.nav-tab{{padding:6px 6px;font-size:10px}}.page{{padding:10px}}.stats{{grid-template-columns:repeat(2,1fr)}}}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <script>window.addEventListener("DOMContentLoaded",function(){document.getElementById("loading-screen").style.display="none";});</script>
@@ -469,7 +468,6 @@ let dirSrt={col:'pid',asc:true}, recSrt={col:'visit_date',asc:false};
 let mergeSelected=[], updTimer={}, logoTaps=0, logoTimer=null, pinEntry='';
 
 const SBH=()=>({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'});
-const _sb = supabase.createClient(SB_URL, SB_KEY);
 const fmtD=d=>{if(!d)return'—';const[y,m,dy]=d.slice(0,10).split('-');return`${parseInt(dy)} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]} ${y}`};
 const fmtA=n=>n&&+n>0?'₹'+(+n).toLocaleString('en-IN'):'—';
 const ini=n=>(n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
