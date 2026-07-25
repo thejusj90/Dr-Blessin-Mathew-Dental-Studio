@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+</head>
+<body style="font-family:sans-serif;padding:16px">
+<h2>Debug Test</h2>
+<div id="log" style="font-size:14px;line-height:2"></div>
+<script>
+var log = document.getElementById('log');
+function L(msg, color) {
+  var d = document.createElement('div');
+  d.style.color = color||'black';
+  d.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+  log.appendChild(d);
+}
+
+var SB_URL = 'https://bpatdayxcyazozdqbasf.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
+var h = {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY};
+
+L('Starting fetch...', 'blue');
+
+fetch(SB_URL+'/rest/v1/patients?select=pid,name&pid=neq.SETTINGS&order=pid.asc&limit=5', {headers: h})
+.then(function(r) {
+  L('Got response: ' + r.status, 'green');
+  return r.json();
+})
+.then(function(d) {
+  L('Patients loaded: ' + d.length, 'green');
+  d.forEach(function(p) { L(p.pid + ' ' + p.name); });
+  
+  // Now fetch visits
+  L('Fetching visits...', 'blue');
+  return fetch(SB_URL+'/rest/v1/visits?select=id,patient_name,visit_date&order=visit_date.desc&limit=5', {headers: h});
+})
+.then(function(r) {
+  L('Visits response: ' + r.status, 'green');
+  return r.json();
+})
+.then(function(d) {
+  L('Visits loaded: ' + d.length, 'green');
+  d.forEach(function(v) { L(v.visit_date + ' - ' + v.patient_name); });
+  L('ALL DONE - FULL APP SHOULD WORK', 'green');
+})
+.catch(function(e) {
+  L('ERROR: ' + e.message, 'red');
+  L('Stack: ' + e.stack, 'red');
+});
+</script>
+</body></html>
