@@ -521,25 +521,22 @@ async function loadData(){
 }
 
 async function init(){
-  // Update loading message with progress
-  const lp = document.querySelector('#loading-screen p');
   if('serviceWorker' in navigator){
     navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
   }
-  try{
-    if(lp) lp.textContent='Loading patients…';
-    // Race between loadData and a 20 second timeout
-    await Promise.race([
-      loadData().then(()=>{ if(lp) lp.textContent='Ready!'; }),
-      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Timeout - please refresh')),20000))
-    ]);
-  }catch(e){
-    console.error(e);
-    showToast('Error loading: '+e.message,'error');
-  }
+  // Show app immediately - don't wait for data
   document.getElementById('loading-screen').style.display='none';
   document.getElementById('av-date').value=new Date().toISOString().split('T')[0];
-  filterDir();applyRec();
+  // Load data in background, refresh UI when done
+  showToast('Loading data…');
+  try{
+    await loadData();
+    filterDir();
+    applyRec();
+    showToast('✓ Data loaded - '+patients.length+' patients','success');
+  }catch(e){
+    showToast('Connection error - pull down to refresh','error');
+  }
 }
 
 function setDoctorMode(v){
