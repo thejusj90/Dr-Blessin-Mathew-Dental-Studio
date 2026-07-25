@@ -747,19 +747,23 @@ async function loadData() {
 
 async function init() {
   if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(regs=>{regs.forEach(r=>r.unregister());});}
-  // Hide loading screen immediately
-  document.getElementById('loading-screen').style.display='none';
-  clearTimeout(window._forceHide);
   document.getElementById('av-date').value=new Date().toISOString().split('T')[0];
-  // Load data in background
-  loadData().then(()=>{
+  // Show loading spinner for max 8 seconds then force show app
+  const ls = document.getElementById('loading-screen');
+  const forceShow = setTimeout(()=>{ ls.style.display='none'; showToast('Loaded','success'); filterDir(); applyRec(); }, 8000);
+  try {
+    await loadData();
+    clearTimeout(forceShow);
+    ls.style.display='none';
+    clearTimeout(window._forceHide);
     rebuildDropdowns();
     filterDir();
     applyRec();
-    if(activeP) showPatient(activeP);
-  }).catch(e=>{
-    showToast('Error: '+e.message,'error');
-  });
+  } catch(e) {
+    clearTimeout(forceShow);
+    ls.style.display='none';
+    showToast('Error loading: '+e.message,'error');
+  }
 }
 
 function showPage(id, btn) {
