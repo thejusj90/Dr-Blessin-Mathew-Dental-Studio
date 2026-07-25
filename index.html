@@ -521,11 +521,18 @@ async function loadData(){
 }
 
 async function init(){
+  // Update loading message with progress
+  const lp = document.querySelector('#loading-screen p');
   if('serviceWorker' in navigator){
     navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
   }
   try{
-    await loadData();
+    if(lp) lp.textContent='Loading patients…';
+    // Race between loadData and a 20 second timeout
+    await Promise.race([
+      loadData().then(()=>{ if(lp) lp.textContent='Ready!'; }),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('Timeout - please refresh')),20000))
+    ]);
   }catch(e){
     console.error(e);
     showToast('Error loading: '+e.message,'error');
