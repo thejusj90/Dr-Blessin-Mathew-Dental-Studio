@@ -951,6 +951,8 @@ function delT(i){allTreatments.splice(i,1);rebuildDropdowns();renderSettings();s
 function addConsultant(){const v=document.getElementById('new-consultant').value.trim();if(!v)return;if(allConsultants.includes(v)){showToast('Already exists','error');return}allConsultants.push(v);document.getElementById('new-consultant').value='';rebuildDropdowns();renderSettings();saveSettings();showToast('✓ Added')}
 function delC(i){allConsultants.splice(i,1);rebuildDropdowns();renderSettings();saveSettings();showToast('Removed')}
 
+function goDirPage(p){dirPage=p;filterDir();window.scrollTo(0,0);}
+function goRecPage(p){recPage=p;renderRec();window.scrollTo(0,0);}
 init();
 </script>
 </body>
