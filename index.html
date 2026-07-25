@@ -492,7 +492,7 @@ async function loadData(){
   // Load patients (exclude SETTINGS)
   let allP=[],off=0;
   while(true){
-    const r=await fetch(SB_URL+'/rest/v1/patients?select=*&pid=neq.SETTINGS&order=pid.asc',{headers:{...h,'Range':off+'-'+(off+999)}});
+    const r=await fetch(SB_URL+'/rest/v1/patients?select=id,pid,name,gender,age,phone&pid=neq.SETTINGS&order=pid.asc',{headers:{...h,'Range':off+'-'+(off+999)}});
     const d=await r.json();
     if(!Array.isArray(d)||!d.length)break;
     allP=[...allP,...d];if(d.length<1000)break;off+=1000;
@@ -511,7 +511,7 @@ async function loadData(){
   // Load visits
   let allV=[],voff=0;
   while(true){
-    const r=await fetch(SB_URL+'/rest/v1/visits?select=*&order=visit_date.desc',{headers:{...h,'Range':voff+'-'+(voff+999)}});
+    const r=await fetch(SB_URL+'/rest/v1/visits?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc',{headers:{...h,'Range':voff+'-'+(voff+999)}});
     const d=await r.json();
     if(!Array.isArray(d)||!d.length)break;
     allV=[...allV,...d];if(d.length<1000)break;voff+=1000;
