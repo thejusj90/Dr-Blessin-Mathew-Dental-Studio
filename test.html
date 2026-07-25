@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="font-family:sans-serif;padding:20px;font-size:18px">
+<h2>Supabase Test</h2>
+<div id="s" style="padding:16px;background:#eee;border-radius:8px;margin:16px 0">Testing...</div>
+<div id="r"></div>
+<script>
+var URL='https://bpatdayxcyazozdqbasf.supabase.co';
+var KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
+document.getElementById('s').textContent='Connecting...';
+fetch(URL+'/rest/v1/patients?select=pid,name&pid=neq.SETTINGS&limit=5',{
+  headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}
+}).then(function(r){
+  document.getElementById('s').textContent='Status: '+r.status;
+  return r.json();
+}).then(function(d){
+  document.getElementById('s').textContent='SUCCESS! '+d.length+' patients loaded';
+  document.getElementById('s').style.background='#d1fae5';
+  document.getElementById('r').innerHTML=d.map(function(p){return '<div>'+p.pid+' '+p.name+'</div>'}).join('');
+}).catch(function(e){
+  document.getElementById('s').textContent='FAILED: '+e.message;
+  document.getElementById('s').style.background='#fee2e2';
+});
+</script>
+</body>
+</html>
