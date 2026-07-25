@@ -522,11 +522,19 @@ async function loadData(){
   }
   rebuildDropdowns();
 
-  // Load visits
+  // Load visits in pages of 1000
   if(sb2)sb2.textContent='Loading visits…';
-  var rv=await fetch(SB_URL+'/rest/v1/visits?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc&limit=2500',{headers:h});
-  var dv=await rv.json();
-  visits=Array.isArray(dv)?dv:[];
+  var allV=[],voff=0;
+  while(true){
+    var rv=await fetch(SB_URL+'/rest/v1/visits?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc',{headers:{...h,'Range':voff+'-'+(voff+999)}});
+    var dv=await rv.json();
+    if(!Array.isArray(dv)||!dv.length)break;
+    allV=allV.concat(dv);
+    if(dv.length<1000)break;
+    voff+=1000;
+    if(sb2)sb2.textContent='Loading visits… '+allV.length;
+  }
+  visits=allV;
 
   rebuildStats();
   if(sb2)sb2.style.display='none';
