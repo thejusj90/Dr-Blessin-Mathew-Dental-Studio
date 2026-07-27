@@ -24,7 +24,7 @@ if(window.caches){
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f6fb;color:#1a1d2e;font-size:14px}
 :root{--teal:#0d9488;--teal-d:#0a7970;--teal-l:#f0fdfa;--teal-m:#ccfbf1;--green:#059669;--red:#dc2626;--amber:#d97706;--amber-l:#fffbeb;--purple:#5b4fcf;--muted:#6b7280;--border:#e4e8f0;--surface:#fff;--bg:#f4f6fb;--shadow:0 2px 8px rgba(0,0,0,.07)}
-nav{background:linear-gradient(135deg,#0d9488,#0891b2);color:#fff;padding:0 14px;display:flex;align-items:center;gap:6px;height:56px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(13,148,136,.3)}
+nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 14px;display:flex;align-items:center;gap:6px;height:56px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(13,148,136,.3)}
 .nav-logo{display:flex;align-items:center;gap:8px;margin-right:auto;cursor:pointer;user-select:none}
 .nav-logo img{height:32px;width:32px;object-fit:contain;border-radius:6px;background:#fff;padding:2px}
 .nav-brand .main{font-size:13px;font-weight:800;color:#fff;display:block}
@@ -407,6 +407,11 @@ textarea{resize:vertical;min-height:60px}
     <div class="card-body">
       <div class="settings-section">
         <h3>Clinic Branding</h3>
+        <div class="add-tag-row" style="margin-bottom:12px">
+          <label style="font-size:12px;color:var(--muted);width:110px">Clinic name</label>
+          <input type="text" id="brand-name" placeholder="Clinic name" style="flex:1"/>
+          <button class="btn btn-primary btn-sm" onclick="saveBranding()">Save</button>
+        </div>
         <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px">
           <img id="brand-logo-preview" src="" style="width:56px;height:56px;object-fit:contain;border-radius:8px;background:#f4f6fb;border:1px solid var(--border);display:none"/>
           <input type="file" id="brand-logo-input" accept="image/*" onchange="uploadBrandLogo(this)"/>
@@ -588,13 +593,15 @@ function showLogin(msg){
   if(msg)document.getElementById('login-error').textContent=msg;
 }
 function hideLogin(){document.getElementById('login-screen').classList.remove('show')}
+const DEFAULT_LOGO='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0d9488"/><path d="M32 16c-6 0-10 4-10 10 0 4 1.5 7 2.5 10.5S26 46 29 46c2.5 0 2.8-4.5 3-7 .2 2.5.5 7 3 7 3 0 3.5-6 4.5-9.5S42 30 42 26c0-6-4-10-10-10z" fill="#fff"/></svg>');
 function applyBranding(){
   if(!AUTH||!AUTH.clinic)return;
   const c=AUTH.clinic;
   if(c.name){document.title=c.name;const nb=document.querySelector('.nav-brand .main');if(nb)nb.textContent=c.name;}
   if(c.primary_color){document.documentElement.style.setProperty('--teal',c.primary_color);}
   if(c.secondary_color){document.documentElement.style.setProperty('--teal-d',c.secondary_color);}
-  if(c.logo_url){document.querySelectorAll('.nav-logo img, #login-logo, #loading-screen img').forEach(el=>{el.src=c.logo_url;el.style.display='';});}
+  const logoSrc=c.logo_url||DEFAULT_LOGO;
+  document.querySelectorAll('.nav-logo img, #login-logo, #loading-screen img, .pin-box img').forEach(el=>{el.src=logoSrc;el.style.display='';});
 }
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
@@ -1048,6 +1055,7 @@ function renderSettings(){
   document.getElementById('treatment-tags').innerHTML=allTreatments.map((t,i)=>`<span class="tag">${t}<span class="tag-del" onclick="delT(${i})">×</span></span>`).join('');
   document.getElementById('consultant-tags').innerHTML=allConsultants.map((c,i)=>`<span class="tag">${c}<span class="tag-del" onclick="delC(${i})">×</span></span>`).join('');
   if(AUTH&&AUTH.clinic){
+    if(AUTH.clinic.name)document.getElementById('brand-name').value=AUTH.clinic.name;
     if(AUTH.clinic.logo_url){document.getElementById('brand-logo-preview').src=AUTH.clinic.logo_url;document.getElementById('brand-logo-preview').style.display='';}
     if(AUTH.clinic.primary_color)document.getElementById('brand-primary').value=AUTH.clinic.primary_color;
     if(AUTH.clinic.secondary_color)document.getElementById('brand-secondary').value=AUTH.clinic.secondary_color;
@@ -1055,10 +1063,13 @@ function renderSettings(){
 }
 async function saveBranding(){
   if(!AUTH||!AUTH.clinic_id)return;
+  const name=document.getElementById('brand-name').value.trim();
   const primary_color=document.getElementById('brand-primary').value;
   const secondary_color=document.getElementById('brand-secondary').value;
-  const r=await fetch(SB_URL+'/rest/v1/clinics?id=eq.'+AUTH.clinic_id,{method:'PATCH',headers:SBH(),body:JSON.stringify({primary_color,secondary_color})});
-  if(r.ok){AUTH.clinic={...(AUTH.clinic||{}),primary_color,secondary_color};saveSession();applyBranding();showToast('✓ Branding updated')}
+  const body={primary_color,secondary_color};
+  if(name)body.name=name;
+  const r=await fetch(SB_URL+'/rest/v1/clinics?id=eq.'+AUTH.clinic_id,{method:'PATCH',headers:SBH(),body:JSON.stringify(body)});
+  if(r.ok){AUTH.clinic={...(AUTH.clinic||{}),...body};saveSession();applyBranding();showToast('✓ Branding updated')}
   else showToast('Failed to update branding','error');
 }
 function uploadBrandLogo(input){
