@@ -163,7 +163,26 @@ textarea{resize:vertical;min-height:60px}
 .add-tag-row{display:flex;gap:6px}
 .add-tag-row input{flex:1}
 .merge-select{width:16px;height:16px;cursor:pointer;accent-color:var(--teal)}
-@media(max-width:600px){{nav{{padding:0 8px;gap:4px}}.nav-tab{{padding:6px 6px;font-size:10px}}.page{{padding:10px}}.stats{{grid-template-columns:repeat(2,1fr)}}}}
+nav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+@media(max-width:600px){
+  nav{padding:0 8px;gap:4px}
+  .nav-tab{padding:6px 8px;font-size:10px;flex-shrink:0}
+  .nav-brand .main{font-size:11px}
+  .nav-brand .sub{font-size:8px}
+  .nav-logo img{height:26px;width:26px}
+  .page{padding:10px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .modal{max-width:100%;border-radius:14px 14px 0 0;margin-top:auto}
+  .modal-overlay{align-items:flex-end;padding:0}
+  .login-box{width:100%;padding:26px 20px}
+  .add-tag-row{flex-wrap:wrap}
+  table{font-size:12px}
+}
+@media(max-width:380px){
+  .nav-tab{padding:5px 6px;font-size:9px}
+  .stats{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
