@@ -506,10 +506,19 @@ nav::-webkit-scrollbar{display:none}
 <script>
 const SB_URL='https://bpatdayxcyazozdqbasf.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
-const PIN_CODE='2088';
-const DEFAULT_T=["10PA", "10PA, Advised RCT", "10PA, Cleaning", "10PA, Cleaning, Composite Filling", "10PA, Cleaning, ZOe", "10PA, Composite Filling", "10PA, Consult", "10PA, ERIO, ZOe", "10PA, Extraction", "10PA, GIC Filling", "10PA, ZOe", "3 Checkup", "ANTIBIOTIC PASTE, BMP, ZOe", "Advised RCT", "Advised RCT, Advised extraction", "Advised extraction", "Advised extraction, Cleaning", "Advised extraction, Consult", "BMP", "BMP Open Drain E", "Bonding Agent, Cleaning", "Bridge Cementation", "CCP", "CHECK UP", "CHECK UP, Ortho appointment", "CHECK UP, RETAINER", "CROWN CUTTING", "Calcium Hychoidl Placed", "Calcium Hychoidl Placed, ERIO", "Calcium Hychoidl Placed, GIC Filling", "Calcium Hychoidl Placed, RCT", "Cleaning", "Cleaning, Composite Filling", "Cleaning, Extraction", "Cleaning, GIC Filling", "Cleaning, Ortho appointment", "Composite", "Composite Filling", "Composite Filling, GIC Filling", "Composite Refilling", "Consult", "Consult + IOPA", "Consult Pedo", "Consult, Ortho appointment", "Consult, Plpectomy", "Crown + Composite + Consult", "Crown Cementation", "Crown Cementation, PFM", "Crown Recementation", "Crown Recementation, GIC Filling", "DC Done", "DENTURE", "DENTURE, IMPRESION", "DENTURE, Try In", "Debonding Done", "Debridement", "Denture Consult", "Diastema Closure", "Dycal + GIC Filling", "Dycal + GIC Filling, GIC Filling", "Dycal+ZOe", "Dycal+ZOe, GIC Filling", "ERCO", "ERCO, ZOe", "ERIO", "ERIO, ZOe", "Extraction", "Extraction 8", "Flexible Denture", "Frenectomy", "GIC Filling", "GIC Filling Done", "GIC Filling, Permanent", "GIC Filling, RCT Obturation Done", "GIC Filling, Refilling", "GIC Filling, ZOe", "Grinding", "IMPLANT CONSULT", "IMPRESION", "IMPRESION, RETAINER", "IPC", "Impression", "Irrigation", "Ketac Molar Filling", "Nightguard Delivered", "Nightguard Impression", "Opaidectomy Done", "Ortho", "Ortho Consult", "Ortho appointment", "Ortho appointment, RETAINER", "PFEM Bridge", "PFM Crown", "Pedo", "Pedo Space Maintainer + Pulpectomy E", "Perm Filling", "Plpectomy", "Plpectomy, Refilling", "Pulpectomy", "Pulpectomy ET", "Pulpotomy", "RCT", "RCT Ca(OH) Placed", "RCT Obturation Done", "RCT, RCT Obturation Done", "RCT, ZOe", "RETAINER", "Refilling Done", "S.S CROWN", "Scaling + Composite", "Scaling + GIC", "Scaling Done", "Surgeon Consult", "Suture Removal", "Temp Ae Filling", "Temp Refilling", "Try In", "ZOE", "ZOE Temp Done E", "ZOe", "metal Crown"];
-const DEFAULT_C=["Consultant", "Dr .Nidhi", "Dr. Arya", "Dr. Godwin", "Dr. Maban", "Dr. Meghali", "Dr. Rahul", "Dr.Farzan", "Dr.Gracina"];
+const DEFAULT_T=[];
+const DEFAULT_C=[];
 const DPAGE=40, RPAGE=50;
+
+// HTML-escape any value before it enters innerHTML or an attribute.
+// Safe for text content AND for quoted attribute values.
+function H(s){
+  if(s===null||s===undefined)return'';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// True when the signed-in account may see financial figures.
+function isPrivileged(){return !!(AUTH&&['owner','doctor'].includes(AUTH.role));}
 
 let patients=[], visits=[], isDoctor=false, activeP=null;
 let allTreatments=[...DEFAULT_T], allConsultants=[...DEFAULT_C];
@@ -583,7 +592,7 @@ async function loadData(){
   // Load visits
   let allV=[],voff=0;
   while(true){
-    const r=await fetch(SB_URL+'/rest/v1/visits?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc',{headers:{...h,'Range':voff+'-'+(voff+999)}});
+    const r=await fetch(SB_URL+'/rest/v1/visits_safe?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc',{headers:{...h,'Range':voff+'-'+(voff+999)}});
     const d=await r.json();
     if(!Array.isArray(d)||!d.length)break;
     allV=[...allV,...d];if(d.length<1000)break;voff+=1000;
@@ -645,6 +654,13 @@ async function init(){
     const vr=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+AUTH.access_token}});
     if(!vr.ok){clearSession();showLogin('Session expired — please sign in again');return}
   }catch(e){clearSession();showLogin('Session expired — please sign in again');return}
+  // Refresh role from the server on every start. Handles sessions saved before
+  // roles existed, and picks up a role change without needing a re-login.
+  try{
+    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=clinic_id,role&user_id=eq.'+AUTH.user_id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+AUTH.access_token}});
+    const md=await mr.json();
+    if(Array.isArray(md)&&md.length){AUTH.role=md[0].role;AUTH.clinic_id=md[0].clinic_id;saveSession();}
+  }catch(e){/* keep whatever role the stored session has */}
   applyBranding();
   if('serviceWorker' in navigator){
     navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
@@ -676,20 +692,17 @@ function lockApp(){setDoctorMode(false);showToast('Locked to Assistant mode')}
 function logoTap(){
   logoTaps++;clearTimeout(logoTimer);
   logoTimer=setTimeout(()=>logoTaps=0,1500);
-  if(logoTaps>=3){logoTaps=0;if(isDoctor){lockApp();return;}showPIN();}
+  if(logoTaps>=3){logoTaps=0;
+    if(isDoctor){lockApp();return;}
+    if(!isPrivileged()){showToast('This account cannot view financial data','error');return;}
+    setDoctorMode(true);showToast('Doctor mode unlocked','success');
+  }
 }
-function showPIN(){pinEntry='';updateDots();document.getElementById('pin-error').textContent='';document.getElementById('pin-overlay').classList.add('show')}
-function pinPress(v){
-  if(v==='cancel'){document.getElementById('pin-overlay').classList.remove('show');return}
-  if(v==='del'){pinEntry=pinEntry.slice(0,-1);updateDots();return}
-  if(pinEntry.length>=4)return;
-  pinEntry+=v;updateDots();
-  if(pinEntry.length===4)setTimeout(()=>{
-    if(pinEntry===PIN_CODE){document.getElementById('pin-overlay').classList.remove('show');setDoctorMode(true);showToast('Doctor mode unlocked','success')}
-    else{document.getElementById('pin-error').textContent='Incorrect PIN';pinEntry='';updateDots()}
-  },200);
-}
-function updateDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).className='pin-dot'+(i<pinEntry.length?' filled':'')}
+// PIN entry removed — doctor mode is now gated by account role (see isPrivileged).
+// Stubs kept so any leftover markup calling these cannot throw.
+function showPIN(){}
+function pinPress(v){}
+function updateDots(){}
 
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -712,9 +725,9 @@ function doSearch(q){
   const m=patients.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.phone&&p.phone.includes(q))||(p.pid&&p.pid.toLowerCase()===q)).slice(0,8);
   if(!m.length){sugg.innerHTML='<div class="sug-item"><div class="sug-name" style="color:var(--muted)">No patients found</div></div>';sugg.style.display='block';return}
   if(m.length===1){sugg.style.display='none';showPatient(m[0]);return}
-  sugg.innerHTML=m.map(p=>`<div class="sug-item" onclick="pickP('${(p.name||'').replace(/'/g,"\'")}')">
-    <div class="avatar ${p.gender||'X'}" style="width:30px;height:30px;font-size:10px">${ini(p.name)}</div>
-    <div><div class="sug-name">${p.name}</div><div class="sug-sub">${p.pid||''} · ${p.phone||'No phone'} · ${p.visits||0} visits</div></div>
+  sugg.innerHTML=m.map(p=>`<div class="sug-item" data-n="${H(p.name)}" onclick="pickP(this.dataset.n)">
+    <div class="avatar ${H(p.gender||'X')}" style="width:30px;height:30px;font-size:10px">${H(ini(p.name))}</div>
+    <div><div class="sug-name">${H(p.name)}</div><div class="sug-sub">${H(p.pid||'')} · ${H(p.phone||'No phone')} · ${p.visits||0} visits</div></div>
   </div>`).join('');sugg.style.display='block';
 }
 function pickP(name){document.getElementById('suggestions').style.display='none';document.getElementById('search-input').value=name;const p=patients.find(x=>x.name===name);if(p)showPatient(p)}
@@ -728,27 +741,27 @@ function showPatient(p){
   const first=vs.length?vs[vs.length-1].visit_date:'';
   const pills=isDoctor?`<div class="pill"><div class="pv">${vs.length}</div><div class="pl">Visits</div></div><div class="pill green"><div class="pv">${fmtA(tC)}</div><div class="pl">Clinic</div></div><div class="pill purple"><div class="pv">${fmtA(tF)}</div><div class="pl">Dr Fees</div></div>`:`<div class="pill"><div class="pv">${vs.length}</div><div class="pl">Total Visits</div></div>`;
   document.getElementById('patient-card').innerHTML=`<div class="card-body"><div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
-    <div class="avatar ${p.gender||'X'}" style="width:50px;height:50px;font-size:18px">${ini(p.name)}</div>
-    <div style="flex:1"><h2 style="font-size:17px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${p.name}
-      <span class="badge ${p.gender||'X'}">${p.gender==='M'?'Male':p.gender==='F'?'Female':'—'}</span>
-      <span class="badge teal">${p.pid||'—'}</span></h2>
+    <div class="avatar ${H(p.gender||'X')}" style="width:50px;height:50px;font-size:18px">${H(ini(p.name))}</div>
+    <div style="flex:1"><h2 style="font-size:17px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${H(p.name)}
+      <span class="badge ${H(p.gender||'X')}">${p.gender==='M'?'Male':p.gender==='F'?'Female':'—'}</span>
+      <span class="badge teal">${H(p.pid||'—')}</span></h2>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;font-size:11px;color:var(--muted)">
-        <span>📱 ${p.phone||'No phone'}</span>${p.age?`<span>Age ${p.age}</span>`:''}
+        <span>📱 ${H(p.phone||'No phone')}</span>${p.age?`<span>Age ${H(p.age)}</span>`:''}
         <span>First: ${fmtD(first)}</span><span>Last: ${fmtD(vs[0]?.visit_date||'')}</span>
       </div>
       <div class="pills">${pills}</div>
     </div></div></div>`;
-  document.getElementById('history-title').textContent=`Visit History — ${p.name} (${vs.length})`;
+  document.getElementById('history-title').textContent=`Visit History — ${p.name||''} (${vs.length})`;
   document.getElementById('history-body').innerHTML=vs.map(v=>`<tr>
     <td><button style="padding:4px 8px;font-size:11px;font-weight:700;background:var(--teal);color:#fff;border:none;border-radius:6px;cursor:pointer" onclick="openEditModal(${v.id})">Edit</button></td>
     <td class="td-date">${fmtD(v.visit_date)}</td>
-    <td><span class="td-tag">${v.treatment||'—'}</span></td>
-    <td style="font-size:11px;color:var(--muted)">${v.diagnosis||'—'}</td>
-    <td style="font-size:11px">${v.consultant||'—'}</td>
+    <td><span class="td-tag">${H(v.treatment||'—')}</span></td>
+    <td style="font-size:11px;color:var(--muted)">${H(v.diagnosis||'—')}</td>
+    <td style="font-size:11px">${H(v.consultant||'—')}</td>
     <td class="td-amt" style="color:var(--purple)">${fmtA(v.cons_fee)}</td>
     <td class="td-amt">${fmtA(v.clinic_share)}</td>
     <td class="td-amt" style="color:var(--amber);font-weight:400">${fmtA(v.lab_cost)}</td>
-    <td style="font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.remarks||'—'}</td>
+    <td style="font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${H(v.remarks||'—')}</td>
   </tr>`).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">No visits</td></tr>';
 }
 function clearSearch(){document.getElementById('search-input').value='';document.getElementById('patient-view').style.display='none';document.getElementById('search-empty').style.display='block';activeP=null}
@@ -759,12 +772,12 @@ function avSearch(q){clearTimeout(avT);avT=setTimeout(()=>doAvS(q),150)}
 function doAvS(q){
   q=q.trim().toLowerCase();const sugg=document.getElementById('av-sugg');if(!q){sugg.style.display='none';return}
   const m=patients.filter(p=>(p.name||'').toLowerCase().includes(q)).slice(0,6);
-  let h=m.map(p=>`<div class="sug-item" onclick="avPick('${(p.name||'').replace(/'/g,"\'")}')">
-    <div class="avatar ${p.gender||'X'}" style="width:26px;height:26px;font-size:10px">${ini(p.name)}</div>
-    <div><div class="sug-name">${p.name}</div><div class="sug-sub">${p.phone||'No phone'} · ${p.pid||''}</div></div>
+  let h=m.map(p=>`<div class="sug-item" data-n="${H(p.name)}" onclick="avPick(this.dataset.n)">
+    <div class="avatar ${H(p.gender||'X')}" style="width:26px;height:26px;font-size:10px">${H(ini(p.name))}</div>
+    <div><div class="sug-name">${H(p.name)}</div><div class="sug-sub">${H(p.phone||'No phone')} · ${H(p.pid||'')}</div></div>
   </div>`).join('');
   if(!patients.find(p=>(p.name||'').toLowerCase()===q))
-    h+=`<div class="sug-item" onclick="showNPF('${q.replace(/'/g,"\'")}')">
+    h+=`<div class="sug-item" data-q="${H(q)}" onclick="showNPF(this.dataset.q)">
       <div class="avatar X" style="width:26px;height:26px;font-size:14px">+</div>
       <div><div class="sug-name" style="color:var(--amber)">Add as new patient</div></div></div>`;
   sugg.innerHTML=h;sugg.style.display='block';
@@ -853,20 +866,20 @@ function renderDir(){
     const isSel=mergeSelected.includes(idx);
     return `<tr style="${isSel?'background:var(--teal-l)':''}">
       <td><input type="checkbox" class="merge-select" ${isSel?'checked':''} onchange="toggleMerge(${idx},this.checked)"/></td>
-      <td class="td-pid">${p.pid||'—'}</td>
-      <td><input class="cell-input" value="${(p.name||'').replace(/"/g,'&quot;')}" onchange="updP(${idx},'name',this.value)"/></td>
-      <td><input class="cell-input" value="${p.age||''}" placeholder="—" style="width:36px" onchange="updP(${idx},'age',this.value)"/></td>
+      <td class="td-pid">${H(p.pid||'—')}</td>
+      <td><input class="cell-input" value="${H(p.name)}" onchange="updP(${idx},'name',this.value)"/></td>
+      <td><input class="cell-input" value="${H(p.age||'')}" placeholder="—" style="width:36px" onchange="updP(${idx},'age',this.value)"/></td>
       <td><select class="cell-select" onchange="updP(${idx},'gender',this.value)">
         <option value="" ${!p.gender?'selected':''}>—</option>
         <option value="M" ${p.gender==='M'?'selected':''}>M</option>
         <option value="F" ${p.gender==='F'?'selected':''}>F</option>
       </select></td>
-      <td><input class="cell-input" value="${p.phone||''}" placeholder="—" onchange="updP(${idx},'phone',this.value)"/></td>
+      <td><input class="cell-input" value="${H(p.phone||'')}" placeholder="—" onchange="updP(${idx},'phone',this.value)"/></td>
       <td><span class="td-v">${p.visits||0}</span></td>
       ${isDoctor?`<td class="doctor-only" style="text-align:right;font-weight:700;color:${p.total?'var(--green)':'var(--muted)'}">${fmtA(p.total)}</td>`:''}
       <td style="display:flex;gap:4px;align-items:center">
-        <button style="padding:3px 6px;font-size:11px;background:var(--teal-l);color:var(--teal);border:none;border-radius:5px;cursor:pointer" onclick="viewDir('${(p.name||'').replace(/'/g,"\'")}')">→</button>
-        ${(p.visits||0)===0?`<button style="padding:3px 6px;font-size:11px;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;cursor:pointer" onclick="delPatient('${p.pid}','${(p.name||'').replace(/'/g,"\'")}')">✕</button>`:''}
+        <button data-n="${H(p.name)}" style="padding:3px 6px;font-size:11px;background:var(--teal-l);color:var(--teal);border:none;border-radius:5px;cursor:pointer" onclick="viewDir(this.dataset.n)">→</button>
+        ${(p.visits||0)===0?`<button data-pid="${H(p.pid)}" data-n="${H(p.name)}" style="padding:3px 6px;font-size:11px;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;cursor:pointer" onclick="delPatient(this.dataset.pid,this.dataset.n)">✕</button>`:''}
       </td>
     </tr>`;
   }).join('');
@@ -969,14 +982,14 @@ function renderRec(){
     <td><button style="padding:3px 7px;font-size:11px;font-weight:700;background:var(--teal);color:#fff;border:none;border-radius:6px;cursor:pointer" onclick="openEditModal(${v.id})">Edit</button></td>
     <td style="color:var(--muted);font-size:10px;text-align:center">${off+i+1}</td>
     <td class="td-date">${fmtD(v.visit_date)}</td>
-    <td style="font-weight:600;font-size:12px;white-space:nowrap">${v.patient_name||''}</td>
-    <td style="font-size:11px;color:var(--muted);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.diagnosis||'—'}</td>
-    <td><span class="td-tag">${v.treatment||'—'}</span></td>
-    <td style="font-size:11px;white-space:nowrap">${v.consultant||'—'}</td>
+    <td style="font-weight:600;font-size:12px;white-space:nowrap">${H(v.patient_name||'')}</td>
+    <td style="font-size:11px;color:var(--muted);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${H(v.diagnosis||'—')}</td>
+    <td><span class="td-tag">${H(v.treatment||'—')}</span></td>
+    <td style="font-size:11px;white-space:nowrap">${H(v.consultant||'—')}</td>
     <td class="td-amt" style="color:var(--purple)">${fmtA(v.cons_fee)}</td>
     <td class="td-amt">${fmtA(v.clinic_share)}</td>
     <td class="td-amt" style="color:var(--amber);font-weight:400">${fmtA(v.lab_cost)}</td>
-    <td style="font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.remarks||'—'}</td>
+    <td style="font-size:11px;color:var(--muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${H(v.remarks||'—')}</td>
   </tr>`).join('');
   const pages=Math.ceil(recF.length/RPAGE);
   const pag=document.getElementById('rec-pag');
