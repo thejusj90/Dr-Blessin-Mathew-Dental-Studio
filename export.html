@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Export Your Data</title>
+<style>
+:root{--teal:#0d9488;--teal-d:#0a7970;--teal-l:#f0fdfa;--green:#059669;--red:#dc2626;--amber:#d97706;--muted:#6b7280;--border:#e4e8f0;--bg:#f4f6fb;--shadow:0 2px 8px rgba(0,0,0,.07)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#1a1d2e;min-height:100vh}
+nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:56px;box-shadow:0 2px 12px rgba(13,148,136,.3)}
+nav .t{font-size:15px;font-weight:800}
+nav .s{font-size:11px;opacity:.85}
+nav a{margin-left:auto;color:#fff;text-decoration:none;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:8px}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:14px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-h{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:800}
+.card-b{padding:16px}
+p.note{font-size:12px;color:var(--muted);line-height:1.55}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--teal-l);border-radius:12px;padding:12px 14px}
+.stat .v{font-size:24px;font-weight:800;color:var(--teal);line-height:1}
+.stat .l{font-size:10px;color:var(--muted);margin-top:4px;font-weight:600}
+.btn{width:100%;padding:13px;border-radius:10px;border:none;background:var(--teal);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:9px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.alt{background:#fff;color:var(--teal);border:1.5px solid var(--teal)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn .sub{font-weight:500;opacity:.85;font-size:11px}
+.login-box{background:#fff;border-radius:20px;padding:32px 28px;width:320px;max-width:100%;margin:60px auto;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.login-box h3{font-size:17px;font-weight:800;margin-bottom:4px}
+.login-box p{font-size:12px;color:var(--muted);margin-bottom:18px}
+.f{margin-bottom:12px;text-align:left}
+.f label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px}
+.f input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit}
+.err{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.center{text-align:center;padding:36px 0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1d2e;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:900}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}
+ul.what{list-style:none;font-size:12px;color:var(--muted);line-height:1.9}
+ul.what li:before{content:'✓';color:var(--green);font-weight:800;margin-right:7px}
+.hide{display:none}
+</style>
+</head>
+<body>
+
+<div id="login" class="hide">
+  <div class="login-box">
+    <h3>Export Your Data</h3>
+    <p>Sign in with your clinic account</p>
+    <div class="f"><label>Email</label><input id="em" type="email" autocomplete="username"/></div>
+    <div class="f"><label>Password</label><input id="pw" type="password" autocomplete="current-password"/></div>
+    <button class="btn" id="lbtn" onclick="doLogin()">Sign In</button>
+    <div class="err" id="lerr"></div>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <nav>
+    <div>
+      <div class="t" id="cname">Your Clinic</div>
+      <div class="s">Data Export</div>
+    </div>
+    <a href="app.html">← Back</a>
+  </nav>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="card-h">Your data</div>
+      <div class="card-b">
+        <div id="loading" class="center"><div class="spinner"></div><p class="note" style="margin-top:12px">Loading your records…</p></div>
+        <div id="ready" class="hide">
+          <div class="stats">
+            <div class="stat"><div class="v" id="np">0</div><div class="l">PATIENTS</div></div>
+            <div class="stat"><div class="v" id="nv">0</div><div class="l">VISITS</div></div>
+          </div>
+          <p class="note" id="range"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hide" id="dl">
+      <div class="card-h">Download</div>
+      <div class="card-b">
+        <button class="btn" onclick="expJSON()">Complete backup <span class="sub">(.json)</span></button>
+        <button class="btn alt" onclick="expCSV('patients')">Patients <span class="sub">(.csv)</span></button>
+        <button class="btn alt" onclick="expCSV('visits')">Visits <span class="sub">(.csv)</span></button>
+        <p class="note" style="margin-top:12px">
+          CSV files open in Excel or Google Sheets. The complete backup is a single
+          JSON file containing everything — keep it somewhere safe.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">What this includes</div>
+      <div class="card-b">
+        <ul class="what">
+          <li>Every patient record in your clinic</li>
+          <li>Every visit, treatment and clinical note</li>
+          <li>Your treatment and consultant lists</li>
+          <li id="fin-line">Fees, clinic share and lab costs</li>
+        </ul>
+        <p class="note" style="margin-top:12px">
+          This is your data. Export it whenever you like, as often as you like.
+          Nothing is deleted from the app when you export.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://bpatdayxcyazozdqbasf.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
+const AUTH_KEY='clinic_session_v1';
+
+let AUTH=null, patients=[], visits=[], settings={treatments:[],consultants:[]};
+
+function H(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+const $=id=>document.getElementById(id);
+const show=(id,v)=>$(id).classList[v?'remove':'add']('hide');
+function toast(m,bad){const t=$('toast');t.textContent=m;t.className='toast show'+(bad?' err':'');setTimeout(()=>t.className='toast',2600);}
+const hdrs=()=>({'apikey':SB_KEY,'Authorization':'Bearer '+AUTH.access_token});
+
+// ── session ──────────────────────────────────────────────────────────────
+// Same origin as app.html, so an existing signed-in session is reused.
+function loadSession(){try{const s=JSON.parse(localStorage.getItem(AUTH_KEY));return s&&s.access_token?s:null}catch(e){return null}}
+
+async function start(){
+  AUTH=loadSession();
+  if(!AUTH){show('login',1);return}
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/user',{headers:hdrs()});
+    if(!r.ok){show('login',1);return}
+  }catch(e){show('login',1);return}
+  show('app',1);
+  loadAll();
+}
+
+async function doLogin(){
+  const email=$('em').value.trim(), password=$('pw').value;
+  const b=$('lbtn'); $('lerr').textContent='';
+  if(!email||!password){$('lerr').textContent='Enter email and password';return}
+  b.disabled=true;b.textContent='Signing in…';
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(!r.ok||!d.access_token){$('lerr').textContent=d.error_description||'Invalid email or password';b.disabled=false;b.textContent='Sign In';return}
+    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=clinic_id,role&user_id=eq.'+d.user.id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+d.access_token}});
+    const md=await mr.json();
+    if(!Array.isArray(md)||!md.length){$('lerr').textContent='This account is not linked to any clinic.';b.disabled=false;b.textContent='Sign In';return}
+    AUTH={access_token:d.access_token,refresh_token:d.refresh_token,user_id:d.user.id,clinic_id:md[0].clinic_id,role:md[0].role};
+    localStorage.setItem(AUTH_KEY,JSON.stringify(AUTH));
+    show('login',0);show('app',1);loadAll();
+  }catch(e){$('lerr').textContent='Connection error — try again';b.disabled=false;b.textContent='Sign In';}
+}
+
+// ── load ─────────────────────────────────────────────────────────────────
+async function pageAll(path){
+  let out=[],off=0;
+  while(true){
+    const r=await fetch(SB_URL+path,{headers:{...hdrs(),'Range':off+'-'+(off+999)}});
+    const d=await r.json();
+    if(!Array.isArray(d)||!d.length)break;
+    out=out.concat(d);
+    if(d.length<1000)break;
+    off+=1000;
+  }
+  return out;
+}
+
+async function loadAll(){
+  try{
+    const cr=await fetch(SB_URL+'/rest/v1/clinics?select=name&id=eq.'+AUTH.clinic_id,{headers:hdrs()});
+    const cd=await cr.json();
+    if(Array.isArray(cd)&&cd.length&&cd[0].name){$('cname').textContent=cd[0].name;document.title='Export — '+cd[0].name;}
+
+    patients=await pageAll('/rest/v1/patients?select=id,pid,name,gender,age,phone,created_at&pid=neq.SETTINGS&order=pid.asc');
+    visits=await pageAll('/rest/v1/visits_safe?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks,created_at&order=visit_date.desc');
+
+    const sr=await fetch(SB_URL+'/rest/v1/patients?pid=eq.SETTINGS&select=age,phone',{headers:hdrs()});
+    const sd=await sr.json();
+    if(Array.isArray(sd)&&sd.length){
+      try{if(sd[0].age)settings.treatments=JSON.parse(sd[0].age)}catch(e){}
+      try{if(sd[0].phone)settings.consultants=JSON.parse(sd[0].phone)}catch(e){}
+    }
+
+    $('np').textContent=patients.length.toLocaleString('en-IN');
+    $('nv').textContent=visits.length.toLocaleString('en-IN');
+
+    const ds=visits.map(v=>v.visit_date).filter(Boolean).sort();
+    $('range').textContent=ds.length?`Visits from ${fmt(ds[0])} to ${fmt(ds[ds.length-1])}.`:'No visits recorded yet.';
+
+    // Financial columns arrive null for accounts without permission.
+    if(visits.length && visits.every(v=>v.cons_fee===null)) $('fin-line').remove();
+
+    show('loading',0);show('ready',1);show('dl',1);
+  }catch(e){
+    show('loading',0);
+    toast('Could not load your data — check your connection',1);
+  }
+}
+
+const fmt=d=>{if(!d)return'';const[y,m,dy]=d.slice(0,10).split('-');return`${+dy} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]} ${y}`};
+const stamp=()=>new Date().toISOString().slice(0,10);
+const slug=()=>($('cname').textContent||'clinic').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+function save(blob,name){
+  const a=document.createElement('a');
+  const url=URL.createObjectURL(blob);
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+// ── CSV ──────────────────────────────────────────────────────────────────
+// Leading apostrophe on formula-triggering values stops Excel treating a
+// field like "=1+1" or "+91..." as a formula on open.
+function cell(v){
+  if(v===null||v===undefined)return'""';
+  let s=String(v);
+  if(/^[=+\-@\t\r]/.test(s))s="'"+s;
+  return '"'+s.replace(/"/g,'""')+'"';
+}
+function toCSV(rows,cols){
+  return [cols.map(c=>cell(c.label)).join(','),
+          ...rows.map(r=>cols.map(c=>cell(r[c.key])).join(','))].join('\r\n');
+}
+
+const P_COLS=[{key:'pid',label:'Patient ID'},{key:'name',label:'Name'},{key:'gender',label:'Gender'},{key:'age',label:'Age'},{key:'phone',label:'Phone'},{key:'created_at',label:'Added On'}];
+const V_COLS=[{key:'visit_date',label:'Date'},{key:'patient_name',label:'Patient'},{key:'age',label:'Age'},{key:'gender',label:'Gender'},{key:'phone',label:'Phone'},{key:'diagnosis',label:'Diagnosis'},{key:'treatment',label:'Treatment'},{key:'consultant',label:'Consultant'},{key:'cons_fee',label:'Doctor Fee'},{key:'clinic_share',label:'Clinic Share'},{key:'lab_cost',label:'Lab Cost'},{key:'remarks',label:'Remarks'}];
+
+function expCSV(kind){
+  const isP=kind==='patients';
+  const rows=isP?patients:visits, cols=isP?P_COLS:V_COLS;
+  if(!rows.length){toast('Nothing to export',1);return}
+  // BOM so Excel reads UTF-8 names correctly
+  const blob=new Blob(['\ufeff'+toCSV(rows,cols)],{type:'text/csv;charset=utf-8;'});
+  save(blob,`${slug()}-${kind}-${stamp()}.csv`);
+  toast(`✓ ${rows.length.toLocaleString('en-IN')} ${kind} exported`);
+}
+
+function expJSON(){
+  const payload={
+    exported_at:new Date().toISOString(),
+    clinic:{name:$('cname').textContent},
+    counts:{patients:patients.length,visits:visits.length},
+    settings:settings,
+    patients:patients,
+    visits:visits
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  save(blob,`${slug()}-backup-${stamp()}.json`);
+  toast('✓ Complete backup downloaded');
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('login').classList.contains('hide'))doLogin()});
+start();
+</script>
+</body>
+</html>
