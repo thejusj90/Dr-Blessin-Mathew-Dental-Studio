@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Activity Log</title>
+<style>
+:root{--teal:#0d9488;--teal-d:#0a7970;--teal-l:#f0fdfa;--green:#059669;--red:#dc2626;--amber:#d97706;--blue:#2563eb;--muted:#6b7280;--border:#e4e8f0;--bg:#f4f6fb}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#1a1d2e;min-height:100vh}
+nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:56px;box-shadow:0 2px 12px rgba(13,148,136,.3)}
+nav .t{font-size:15px;font-weight:800}
+nav .s{font-size:11px;opacity:.85}
+nav a{margin-left:auto;color:#fff;text-decoration:none;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:8px}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.card-b{padding:14px 16px}
+p.note{font-size:12px;color:var(--muted);line-height:1.55}
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.chip{padding:7px 13px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit}
+.chip.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.day{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px 2px}
+.ev{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:11px}
+.dot{width:32px;height:32px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
+.dot.add{background:var(--green)}
+.dot.edit{background:var(--blue)}
+.dot.del{background:var(--red)}
+.ev-b{flex:1;min-width:0}
+.ev-t{font-size:13px;font-weight:600;line-height:1.4}
+.ev-t b{font-weight:800}
+.ev-m{font-size:11px;color:var(--muted);margin-top:3px}
+.ev-m .who{font-weight:700;color:#374151}
+.ev-m .adm{font-weight:700;color:var(--amber)}
+.diff{margin-top:7px;font-size:11px;background:var(--bg);border-radius:7px;padding:7px 9px;line-height:1.7}
+.diff .f{color:var(--muted);font-weight:600}
+.diff .o{color:var(--red);text-decoration:line-through}
+.diff .n{color:var(--green);font-weight:600}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.center{text-align:center;padding:40px 0;color:var(--muted);font-size:13px}
+.login-box{background:#fff;border-radius:20px;padding:32px 28px;width:320px;max-width:100%;margin:60px auto;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.login-box h3{font-size:17px;font-weight:800;margin-bottom:4px}
+.login-box p{font-size:12px;color:var(--muted);margin-bottom:18px}
+.f{margin-bottom:12px;text-align:left}
+.f label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px}
+.f input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit}
+.btn{width:100%;padding:12px;border-radius:10px;border:none;background:var(--teal);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+.err{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
+.more{width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--teal);background:#fff;color:var(--teal);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px}
+.hide{display:none}
+</style>
+</head>
+<body>
+
+<div id="login" class="hide">
+  <div class="login-box">
+    <h3>Activity Log</h3>
+    <p>Sign in with your clinic account</p>
+    <div class="f"><label>Email</label><input id="em" type="email" autocomplete="username"/></div>
+    <div class="f"><label>Password</label><input id="pw" type="password" autocomplete="current-password"/></div>
+    <button class="btn" id="lbtn" onclick="doLogin()">Sign In</button>
+    <div class="err" id="lerr"></div>
+  </div>
+</div>
+
+<div id="app" class="hide">
+  <nav>
+    <div>
+      <div class="t" id="cname">Your Clinic</div>
+      <div class="s">Activity Log</div>
+    </div>
+    <a href="app.html">← Back</a>
+  </nav>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="card-b">
+        <p class="note">
+          Every change made to your records — who made it, what changed, and when.
+          This log cannot be edited or deleted by anyone, including us.
+        </p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <button class="chip on" data-f="all"      onclick="setF(this)">All</button>
+      <button class="chip"    data-f="patients" onclick="setF(this)">Patients</button>
+      <button class="chip"    data-f="visits"   onclick="setF(this)">Visits</button>
+      <button class="chip"    data-f="DELETE"   onclick="setF(this)">Deletions</button>
+      <button class="chip"    data-f="admin"    onclick="setF(this)">Support access</button>
+    </div>
+
+    <div id="loading" class="center"><div class="spinner"></div></div>
+    <div id="feed"></div>
+    <button class="more hide" id="more" onclick="loadMore()">Load older activity</button>
+    <div id="empty" class="center hide">No activity recorded yet.</div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://bpatdayxcyazozdqbasf.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
+const AUTH_KEY='clinic_session_v1';
+const PAGE=50;
+
+let AUTH=null, rows=[], names={}, filter='all', offset=0, done=false;
+
+function H(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+const $=i=>document.getElementById(i);
+const show=(i,v)=>$(i).classList[v?'remove':'add']('hide');
+const hdrs=()=>({'apikey':SB_KEY,'Authorization':'Bearer '+AUTH.access_token});
+
+// ── session (same origin as app.html, so an existing login is reused) ──
+function loadSession(){try{const s=JSON.parse(localStorage.getItem(AUTH_KEY));return s&&s.access_token?s:null}catch(e){return null}}
+
+async function start(){
+  AUTH=loadSession();
+  if(!AUTH){show('login',1);return}
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/user',{headers:hdrs()});
+    if(!r.ok){show('login',1);return}
+  }catch(e){show('login',1);return}
+  show('app',1);
+  init();
+}
+
+async function doLogin(){
+  const email=$('em').value.trim(), password=$('pw').value;
+  const b=$('lbtn'); $('lerr').textContent='';
+  if(!email||!password){$('lerr').textContent='Enter email and password';return}
+  b.disabled=true;b.textContent='Signing in…';
+  try{
+    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const d=await r.json();
+    if(!r.ok||!d.access_token){$('lerr').textContent=d.error_description||'Invalid email or password';b.disabled=false;b.textContent='Sign In';return}
+    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=clinic_id,role&user_id=eq.'+d.user.id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+d.access_token}});
+    const md=await mr.json();
+    if(!Array.isArray(md)||!md.length){$('lerr').textContent='This account is not linked to any clinic.';b.disabled=false;b.textContent='Sign In';return}
+    AUTH={access_token:d.access_token,refresh_token:d.refresh_token,user_id:d.user.id,clinic_id:md[0].clinic_id,role:md[0].role};
+    localStorage.setItem(AUTH_KEY,JSON.stringify(AUTH));
+    show('login',0);show('app',1);init();
+  }catch(e){$('lerr').textContent='Connection error — try again';b.disabled=false;b.textContent='Sign In';}
+}
+
+async function init(){
+  try{
+    const cr=await fetch(SB_URL+'/rest/v1/clinics?select=name&id=eq.'+AUTH.clinic_id,{headers:hdrs()});
+    const cd=await cr.json();
+    if(Array.isArray(cd)&&cd.length&&cd[0].name){$('cname').textContent=cd[0].name;document.title='Activity — '+cd[0].name;}
+
+    // map user ids to emails so the log shows people, not UUIDs
+    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=user_id,role&clinic_id=eq.'+AUTH.clinic_id,{headers:hdrs()});
+    const md=await mr.json();
+    if(Array.isArray(md))md.forEach(m=>{names[m.user_id]=m.user_id===AUTH.user_id?'You':(m.role==='owner'?'Clinic owner':m.role==='doctor'?'Doctor':'Staff')});
+  }catch(e){}
+  loadMore();
+}
+
+async function loadMore(){
+  if(done)return;
+  show('loading',1);show('more',0);
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/activity_log?select=*&order=created_at.desc',
+      {headers:{...hdrs(),'Range':offset+'-'+(offset+PAGE-1)}});
+    const d=await r.json();
+    if(!Array.isArray(d)){show('loading',0);return}
+    rows=rows.concat(d);
+    offset+=d.length;
+    if(d.length<PAGE)done=true;
+  }catch(e){}
+  show('loading',0);
+  render();
+}
+
+function setF(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  filter=el.dataset.f;
+  render();
+}
+
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dayLabel(iso){
+  const d=new Date(iso), n=new Date();
+  const same=(a,b)=>a.toDateString()===b.toDateString();
+  if(same(d,n))return 'Today';
+  const y=new Date(n); y.setDate(y.getDate()-1);
+  if(same(d,y))return 'Yesterday';
+  return d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear();
+}
+const timeOf=iso=>{const d=new Date(iso);let h=d.getHours();const m=String(d.getMinutes()).padStart(2,'0');const ap=h>=12?'pm':'am';h=h%12||12;return h+':'+m+ap;};
+
+const FIELD={pid:'patient ID',name:'name',patient_name:'patient',gender:'gender',age:'age',phone:'phone',
+  visit_date:'visit date',diagnosis:'diagnosis',treatment:'treatment',consultant:'consultant',
+  cons_fee:'fee',clinic_share:'clinic share',lab_cost:'lab cost',remarks:'remarks'};
+
+function verb(a,t){
+  const what=t==='patients'?'patient':'visit';
+  if(a==='INSERT')return['add','Added '+what+' '];
+  if(a==='DELETE')return['del','Deleted '+what+' '];
+  return['edit','Updated '+what+' '];
+}
+
+function diffHtml(r){
+  if(r.action!=='UPDATE'||!r.changed_fields)return '';
+  const ks=Object.keys(r.changed_fields);
+  if(!ks.length)return '';
+  return '<div class="diff">'+ks.map(k=>{
+    const v=r.changed_fields[k];
+    if(v===null||typeof v!=='object')return '';
+    const f=FIELD[k]||k;
+    const from=v.from===null||v.from===''?'(blank)':v.from;
+    const to=v.to===null||v.to===''?'(blank)':v.to;
+    return '<div><span class="f">'+H(f)+':</span> <span class="o">'+H(from)+'</span> → <span class="n">'+H(to)+'</span></div>';
+  }).join('')+'</div>';
+}
+
+function render(){
+  const f=rows.filter(r=>{
+    if(filter==='all')return true;
+    if(filter==='admin')return !r.changed_by;
+    if(filter==='DELETE')return r.action==='DELETE';
+    return r.table_name===filter;
+  });
+
+  if(!f.length&&done){show('empty',1);$('feed').innerHTML='';show('more',0);return}
+  show('empty',0);
+
+  let html='', lastDay='';
+  f.forEach(r=>{
+    const day=dayLabel(r.created_at);
+    if(day!==lastDay){html+='<div class="day">'+H(day)+'</div>';lastDay=day;}
+    const [cls,txt]=verb(r.action,r.table_name);
+    const icon=cls==='add'?'+':cls==='del'?'×':'✎';
+    const who=r.changed_by
+      ? '<span class="who">'+H(names[r.changed_by]||'A team member')+'</span>'
+      : '<span class="adm">Support access</span>';
+    html+='<div class="ev">'
+        + '<div class="dot '+cls+'">'+icon+'</div>'
+        + '<div class="ev-b">'
+        +   '<div class="ev-t">'+H(txt)+'<b>'+H(r.record_label||'record')+'</b></div>'
+        +   '<div class="ev-m">'+who+' · '+H(timeOf(r.created_at))+'</div>'
+        +   diffHtml(r)
+        + '</div></div>';
+  });
+  $('feed').innerHTML=html;
+  show('more',!done);
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!$('login').classList.contains('hide'))doLogin()});
+start();
+</script>
+</body>
+</html>
