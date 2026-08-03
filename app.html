@@ -31,14 +31,10 @@ nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padd
 .login-field{margin-bottom:12px;text-align:left}
 .login-field label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px}
 .login-field input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px}
-.login-btn{width:100%;padding:12px;border-radius:10px;border:none;background:var(--teal);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px}
 .gbtn{width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:#3c4043;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-family:inherit}
 .gbtn:hover{background:#f8f9fa}
 .gbtn:disabled{opacity:.6;cursor:default}
 .gbtn svg{width:18px;height:18px;flex:none}
-.or-div{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:11px;font-weight:600}
-.or-div:before,.or-div:after{content:'';flex:1;height:1px;background:var(--border)}
-.login-btn:disabled{opacity:.6}
 .login-error{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
 .nav-tab.logout{color:rgba(255,255,255,.7)}
 .pin-box{background:#fff;border-radius:20px;padding:28px;width:290px;text-align:center}
@@ -188,15 +184,11 @@ nav::-webkit-scrollbar{display:none}
 <div id="login-screen">
   <div class="login-box">
     <img id="login-logo" src="" alt="logo" style="display:none"/>
-    <h3 id="login-title">Clinic Login</h3>
-    <p>Sign in to access your patient records</p>
-    <div class="login-field"><label>Email</label><input type="email" id="login-email" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <div class="login-field"><label>Password</label><input type="password" id="login-password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="or-div">OR</div>
+    <h3 id="login-title">Welcome to DentMemo</h3>
+    <p>New? We'll set up your clinic. Been here before? Straight to your chair.</p>
     <button class="gbtn" id="gbtn" onclick="signInWithGoogle()">
       <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Sign in with Google
+      Continue with Google
     </button>
     <div class="login-error" id="login-error"></div>
   </div>
@@ -627,35 +619,6 @@ function applyBranding(){
   if(c.secondary_color){document.documentElement.style.setProperty('--teal-d',c.secondary_color);}
   const logoSrc=c.logo_url||DEFAULT_LOGO;
   document.querySelectorAll('.nav-logo img, #login-logo, #loading-screen img, .pin-box img').forEach(el=>{el.src=logoSrc;el.style.display='';});
-}
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  const btn=document.getElementById('login-btn');
-  document.getElementById('login-error').textContent='';
-  if(!email||!password){document.getElementById('login-error').textContent='Enter email and password';return}
-  btn.disabled=true;btn.textContent='Signing in…';
-  try{
-    const r=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password})});
-    const d=await r.json();
-    if(!r.ok||!d.access_token){document.getElementById('login-error').textContent=(d.error_description||'Invalid email or password');btn.disabled=false;btn.textContent='Sign In';return}
-    const uid=d.user&&d.user.id;
-    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=clinic_id,role&user_id=eq.'+uid,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+d.access_token}});
-    const md=await mr.json();
-    if(!Array.isArray(md)||!md.length){document.getElementById('login-error').textContent='This account is not linked to any clinic yet.';btn.disabled=false;btn.textContent='Sign In';return}
-    AUTH={access_token:d.access_token,refresh_token:d.refresh_token,user_id:uid,clinic_id:md[0].clinic_id,role:md[0].role};
-    const cr=await fetch(SB_URL+'/rest/v1/clinics?select=name,logo_url,primary_color,secondary_color&id=eq.'+AUTH.clinic_id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+d.access_token}});
-    const cd=await cr.json();
-    if(Array.isArray(cd)&&cd.length)AUTH.clinic=cd[0];
-    saveSession();
-    applyBranding();
-    hideLogin();
-    document.getElementById('login-password').value='';
-    init();
-  }catch(e){
-    document.getElementById('login-error').textContent='Connection error — try again';
-    btn.disabled=false;btn.textContent='Sign In';
-  }
 }
 function doLogout(){clearSession();location.reload()}
 
