@@ -32,6 +32,12 @@ nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padd
 .login-field label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px}
 .login-field input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px}
 .login-btn{width:100%;padding:12px;border-radius:10px;border:none;background:var(--teal);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px}
+.gbtn{width:100%;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:#fff;color:#3c4043;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-family:inherit}
+.gbtn:hover{background:#f8f9fa}
+.gbtn:disabled{opacity:.6;cursor:default}
+.gbtn svg{width:18px;height:18px;flex:none}
+.or-div{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:11px;font-weight:600}
+.or-div:before,.or-div:after{content:'';flex:1;height:1px;background:var(--border)}
 .login-btn:disabled{opacity:.6}
 .login-error{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
 .nav-tab.logout{color:rgba(255,255,255,.7)}
@@ -187,6 +193,11 @@ nav::-webkit-scrollbar{display:none}
     <div class="login-field"><label>Email</label><input type="email" id="login-email" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <div class="login-field"><label>Password</label><input type="password" id="login-password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="or-div">OR</div>
+    <button class="gbtn" id="gbtn" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
@@ -506,8 +517,8 @@ nav::-webkit-scrollbar{display:none}
 <script>
 const SB_URL='https://bpatdayxcyazozdqbasf.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwYXRkYXl4Y3lhem96ZHFiYXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzOTU0NTksImV4cCI6MjA5OTk3MTQ1OX0.ludAPHZKT_NJXZHp3BmGRtbxWCxhMVXgF_hfVPCt0GU';
-const DEFAULT_T=[];
-const DEFAULT_C=[];
+const DEFAULT_T=["10PA", "10PA, Advised RCT", "10PA, Cleaning", "10PA, Cleaning, Composite Filling", "10PA, Cleaning, ZOe", "10PA, Composite Filling", "10PA, Consult", "10PA, ERIO, ZOe", "10PA, Extraction", "10PA, GIC Filling", "10PA, ZOe", "3 Checkup", "ANTIBIOTIC PASTE, BMP, ZOe", "Advised RCT", "Advised RCT, Advised extraction", "Advised extraction", "Advised extraction, Cleaning", "Advised extraction, Consult", "BMP", "BMP Open Drain E", "Bonding Agent, Cleaning", "Bridge Cementation", "CCP", "CHECK UP", "CHECK UP, Ortho appointment", "CHECK UP, RETAINER", "CROWN CUTTING", "Calcium Hychoidl Placed", "Calcium Hychoidl Placed, ERIO", "Calcium Hychoidl Placed, GIC Filling", "Calcium Hychoidl Placed, RCT", "Cleaning", "Cleaning, Composite Filling", "Cleaning, Extraction", "Cleaning, GIC Filling", "Cleaning, Ortho appointment", "Composite", "Composite Filling", "Composite Filling, GIC Filling", "Composite Refilling", "Consult", "Consult + IOPA", "Consult Pedo", "Consult, Ortho appointment", "Consult, Plpectomy", "Crown + Composite + Consult", "Crown Cementation", "Crown Cementation, PFM", "Crown Recementation", "Crown Recementation, GIC Filling", "DC Done", "DENTURE", "DENTURE, IMPRESION", "DENTURE, Try In", "Debonding Done", "Debridement", "Denture Consult", "Diastema Closure", "Dycal + GIC Filling", "Dycal + GIC Filling, GIC Filling", "Dycal+ZOe", "Dycal+ZOe, GIC Filling", "ERCO", "ERCO, ZOe", "ERIO", "ERIO, ZOe", "Extraction", "Extraction 8", "Flexible Denture", "Frenectomy", "GIC Filling", "GIC Filling Done", "GIC Filling, Permanent", "GIC Filling, RCT Obturation Done", "GIC Filling, Refilling", "GIC Filling, ZOe", "Grinding", "IMPLANT CONSULT", "IMPRESION", "IMPRESION, RETAINER", "IPC", "Impression", "Irrigation", "Ketac Molar Filling", "Nightguard Delivered", "Nightguard Impression", "Opaidectomy Done", "Ortho", "Ortho Consult", "Ortho appointment", "Ortho appointment, RETAINER", "PFEM Bridge", "PFM Crown", "Pedo", "Pedo Space Maintainer + Pulpectomy E", "Perm Filling", "Plpectomy", "Plpectomy, Refilling", "Pulpectomy", "Pulpectomy ET", "Pulpotomy", "RCT", "RCT Ca(OH) Placed", "RCT Obturation Done", "RCT, RCT Obturation Done", "RCT, ZOe", "RETAINER", "Refilling Done", "S.S CROWN", "Scaling + Composite", "Scaling + GIC", "Scaling Done", "Surgeon Consult", "Suture Removal", "Temp Ae Filling", "Temp Refilling", "Try In", "ZOE", "ZOE Temp Done E", "ZOe", "metal Crown"];
+const DEFAULT_C=["Consultant"];
 const DPAGE=40, RPAGE=50;
 
 // HTML-escape any value before it enters innerHTML or an attribute.
@@ -648,7 +659,51 @@ async function doLogin(){
 }
 function doLogout(){clearSession();location.reload()}
 
+// ---- Google sign-in ----------------------------------------------------
+function signInWithGoogle(){
+  const b=document.getElementById('gbtn');
+  if(b){b.disabled=true;b.textContent='Redirecting…';}
+  const back=location.origin+location.pathname;
+  location.href=SB_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(back);
+}
+
+// Supabase returns the session in the URL fragment after an OAuth redirect.
+// Returns true if a fragment was present and handled (successfully or not).
+async function handleOAuthRedirect(){
+  const h=location.hash||'';
+  if(h.indexOf('access_token')===-1&&h.indexOf('error')===-1)return false;
+  const p=new URLSearchParams(h.substring(1));
+  history.replaceState(null,'',location.pathname);   // strip tokens from the URL bar
+
+  if(p.get('error')){
+    showLogin(p.get('error_description')||'Google sign-in was cancelled');
+    return true;
+  }
+  const at=p.get('access_token'), rt=p.get('refresh_token');
+  if(!at){showLogin('Google sign-in failed — please try again');return true;}
+
+  try{
+    const ur=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+at}});
+    if(!ur.ok){showLogin('Could not verify Google account');return true;}
+    const u=await ur.json();
+
+    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=clinic_id,role&user_id=eq.'+u.id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+at}});
+    const md=await mr.json();
+    if(!Array.isArray(md)||!md.length){
+      showLogin('This Google account is not linked to a clinic yet. Please contact your administrator.');
+      return true;
+    }
+    AUTH={access_token:at,refresh_token:rt,user_id:u.id,clinic_id:md[0].clinic_id,role:md[0].role};
+    saveSession();
+    return true;
+  }catch(e){
+    showLogin('Connection error — please try again');
+    return true;
+  }
+}
+
 async function init(){
+  if(await handleOAuthRedirect()&&!AUTH)return;
   if(!AUTH||!AUTH.access_token){showLogin();return}
   try{
     const vr=await fetch(SB_URL+'/auth/v1/user',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+AUTH.access_token}});
