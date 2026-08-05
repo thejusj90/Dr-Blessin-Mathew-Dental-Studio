@@ -4,11 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Activity Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--teal:#0d9488;--teal-d:#0a7970;--teal-l:#f0fdfa;--green:#059669;--red:#dc2626;--amber:#d97706;--blue:#2563eb;--muted:#6b7280;--border:#e4e8f0;--bg:#f4f6fb}
+:root{--teal:#2563ff;--teal-d:#0d1b3d;--teal-l:#eaf1ff;--green:#059669;--red:#dc2626;--amber:#d97706;--blue:#5b4fcf;--muted:#6b7280;--border:#e6eaf0;--bg:#fafbfd;--ink:#1f2937;--font-sans:'Inter',system-ui,-apple-system,sans-serif}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#1a1d2e;min-height:100vh}
-nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:56px;box-shadow:0 2px 12px rgba(13,148,136,.3)}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--ink);min-height:100vh}
+nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:56px;box-shadow:0 2px 12px rgba(37,99,255,.3)}
 nav .t{font-size:15px;font-weight:800}
 nav .s{font-size:11px;opacity:.85}
 nav a{margin-left:auto;color:#fff;text-decoration:none;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:8px}
@@ -149,9 +152,9 @@ async function init(){
     if(Array.isArray(cd)&&cd.length&&cd[0].name){$('cname').textContent=cd[0].name;document.title='Activity — '+cd[0].name;}
 
     // map user ids to emails so the log shows people, not UUIDs
-    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=user_id,role&clinic_id=eq.'+AUTH.clinic_id,{headers:hdrs()});
+    const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=user_id,role,display_name&clinic_id=eq.'+AUTH.clinic_id,{headers:hdrs()});
     const md=await mr.json();
-    if(Array.isArray(md))md.forEach(m=>{names[m.user_id]=m.user_id===AUTH.user_id?'You':(m.role==='owner'?'Clinic owner':m.role==='doctor'?'Doctor':'Staff')});
+    if(Array.isArray(md))md.forEach(m=>{names[m.user_id]=m.user_id===AUTH.user_id?'You':(m.display_name||(m.role==='owner'?'Clinic owner':m.role==='doctor'?'Doctor':'Staff'))});
   }catch(e){}
   loadMore();
 }
