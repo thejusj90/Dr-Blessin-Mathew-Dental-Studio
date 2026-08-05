@@ -23,6 +23,30 @@ nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padd
 .mode-badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700}
 .mode-badge.assistant{background:rgba(255,255,255,.2);color:#fff}
 .mode-badge.doctor{background:#fbbf24;color:#78350f}
+#onb-overlay{position:fixed;inset:0;background:var(--bg);z-index:610;display:none;align-items:center;justify-content:center;padding:20px}
+#onb-overlay.show{display:flex}
+.onb-box{background:#fff;border-radius:16px;box-shadow:var(--shadow-lg,0 8px 30px rgba(13,27,61,.12));padding:28px 24px;width:340px;max-width:100%;text-align:center}
+.onb-box h3{font-size:18px;font-weight:800;margin-bottom:6px;color:var(--ink)}
+.onb-box p.sub{font-size:12px;color:var(--muted);margin-bottom:18px}
+.onb-choice-btn{width:100%;padding:14px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:10px;color:var(--ink)}
+.onb-choice-btn.primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.onb-progress{display:flex;gap:4px;margin-bottom:18px}
+.onb-progress div{flex:1;height:4px;border-radius:2px;background:var(--border)}
+.onb-progress div.done{background:var(--teal)}
+.onb-field{margin-bottom:12px;text-align:left}
+.onb-field label{font-size:11px;font-weight:700;color:var(--muted);display:block;margin-bottom:4px}
+.onb-field input{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit}
+.onb-nav{display:flex;gap:8px;margin-top:16px}
+.onb-nav button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;font-size:14px;cursor:pointer}
+.onb-nav .back{background:#fff;border:1.5px solid var(--border);color:var(--ink)}
+.onb-nav .next{background:var(--teal);color:#fff}
+.onb-nav .next:disabled{opacity:.45;cursor:default}
+.onb-logo-preview{width:64px;height:64px;border-radius:12px;object-fit:contain;background:var(--bg);border:1px solid var(--border);margin:0 auto 14px;display:none}
+.onb-treat-list{text-align:left;max-height:220px;overflow-y:auto;margin-bottom:14px}
+.onb-treat-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;text-transform:none;letter-spacing:normal;font-weight:500;color:var(--ink)}
+.onb-treat-item input{width:16px;height:16px}
+.onb-error{color:var(--red);font-size:12px;margin-top:8px;min-height:14px}
+.onb-link{font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;margin-top:6px;display:inline-block}
 #pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:center;justify-content:center}
 #pin-overlay.show{display:flex}
 #login-screen{position:fixed;inset:0;background:var(--bg,var(--bg));z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
@@ -194,6 +218,100 @@ nav::-webkit-scrollbar{display:none}
       Continue with Google
     </button>
     <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<div id="onb-overlay">
+  <div class="onb-box" id="onb-choice">
+    <h3>Welcome to DentMemo</h3>
+    <p class="sub">Let's get your clinic set up.</p>
+    <button class="onb-choice-btn primary" onclick="onbGoWizard()">Set up a new clinic</button>
+    <button class="onb-choice-btn" onclick="onbGoJoin()">I have a staff code</button>
+  </div>
+
+  <div class="onb-box" id="onb-wizard" style="display:none">
+    <div class="onb-progress" id="onb-progress">
+      <div id="onb-p1"></div><div id="onb-p2"></div><div id="onb-p3"></div><div id="onb-p4"></div>
+    </div>
+
+    <div id="onb-step-1">
+      <h3>Tell us about your clinic</h3>
+      <p class="sub">Step 1 of 4</p>
+      <div class="onb-field"><label>Doctor name</label><input id="onb-doctor-name" oninput="onbValidateStep1()" placeholder="Dr. Jane Doe"/></div>
+      <div class="onb-field"><label>Clinic name</label><input id="onb-clinic-name" oninput="onbValidateStep1()" placeholder="Sunrise Dental"/></div>
+      <div class="onb-nav"><button class="next" id="onb-next-1" onclick="onbGoStep(2)" disabled>Continue</button></div>
+    </div>
+
+    <div id="onb-step-2" style="display:none">
+      <h3>Add your logo</h3>
+      <p class="sub">Step 2 of 4 — optional, you can change this later</p>
+      <img id="onb-logo-preview" class="onb-logo-preview"/>
+      <input type="file" id="onb-logo-file" accept="image/*" onchange="onbLogoChange(this)" style="margin-bottom:14px"/>
+      <div class="onb-nav">
+        <button class="back" onclick="onbGoStep(1)">Back</button>
+        <button class="next" onclick="onbGoStep(3)">Continue</button>
+      </div>
+      <span class="onb-link" onclick="onbGoStep(3)">Skip for now</span>
+    </div>
+
+    <div id="onb-step-3">
+      <h3 id="onb-pin-title">Set a staff code</h3>
+      <p class="sub" id="onb-pin-sub">Step 3 of 4 — share this 4-digit code with your team so they can join</p>
+      <div class="pin-dots" id="onb-pin-dots">
+        <div class="pin-dot" id="opd0"></div><div class="pin-dot" id="opd1"></div>
+        <div class="pin-dot" id="opd2"></div><div class="pin-dot" id="opd3"></div>
+      </div>
+      <div class="pin-grid">
+        <button class="pin-btn" onclick="onbPinPress('1')">1</button>
+        <button class="pin-btn" onclick="onbPinPress('2')">2</button>
+        <button class="pin-btn" onclick="onbPinPress('3')">3</button>
+        <button class="pin-btn" onclick="onbPinPress('4')">4</button>
+        <button class="pin-btn" onclick="onbPinPress('5')">5</button>
+        <button class="pin-btn" onclick="onbPinPress('6')">6</button>
+        <button class="pin-btn" onclick="onbPinPress('7')">7</button>
+        <button class="pin-btn" onclick="onbPinPress('8')">8</button>
+        <button class="pin-btn" onclick="onbPinPress('9')">9</button>
+        <button class="pin-btn" style="font-size:12px;color:var(--muted)" onclick="onbGoStep(2)">✕</button>
+        <button class="pin-btn" onclick="onbPinPress('0')">0</button>
+        <button class="pin-btn" onclick="onbPinPress('del')">⌫</button>
+      </div>
+      <div class="onb-error" id="onb-pin-error"></div>
+    </div>
+
+    <div id="onb-step-4" style="display:none">
+      <h3>Starter treatments</h3>
+      <p class="sub">Step 4 of 4 — untick anything you don't need, you can edit this list anytime</p>
+      <div class="onb-treat-list" id="onb-treat-list"></div>
+      <div class="onb-nav">
+        <button class="back" onclick="onbGoStep(3)">Back</button>
+        <button class="next" id="onb-finish-btn" onclick="onbSubmitWizard()">Create my clinic</button>
+      </div>
+      <div class="onb-error" id="onb-wizard-error"></div>
+    </div>
+  </div>
+
+  <div class="onb-box" id="onb-join" style="display:none">
+    <h3>Join your clinic</h3>
+    <p class="sub">Enter the staff code your clinic gave you</p>
+    <div class="pin-dots" id="join-pin-dots">
+      <div class="pin-dot" id="jpd0"></div><div class="pin-dot" id="jpd1"></div>
+      <div class="pin-dot" id="jpd2"></div><div class="pin-dot" id="jpd3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="joinPinPress('1')">1</button>
+      <button class="pin-btn" onclick="joinPinPress('2')">2</button>
+      <button class="pin-btn" onclick="joinPinPress('3')">3</button>
+      <button class="pin-btn" onclick="joinPinPress('4')">4</button>
+      <button class="pin-btn" onclick="joinPinPress('5')">5</button>
+      <button class="pin-btn" onclick="joinPinPress('6')">6</button>
+      <button class="pin-btn" onclick="joinPinPress('7')">7</button>
+      <button class="pin-btn" onclick="joinPinPress('8')">8</button>
+      <button class="pin-btn" onclick="joinPinPress('9')">9</button>
+      <button class="pin-btn" style="font-size:12px;color:var(--muted)" onclick="onbGoChoice()">✕</button>
+      <button class="pin-btn" onclick="joinPinPress('0')">0</button>
+      <button class="pin-btn" onclick="joinPinPress('del')">⌫</button>
+    </div>
+    <div class="onb-error" id="join-error"></div>
   </div>
 </div>
 
@@ -515,6 +633,7 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const DEFAULT_T=["10PA", "10PA, Advised RCT", "10PA, Cleaning", "10PA, Cleaning, Composite Filling", "10PA, Cleaning, ZOe", "10PA, Composite Filling", "10PA, Consult", "10PA, ERIO, ZOe", "10PA, Extraction", "10PA, GIC Filling", "10PA, ZOe", "3 Checkup", "ANTIBIOTIC PASTE, BMP, ZOe", "Advised RCT", "Advised RCT, Advised extraction", "Advised extraction", "Advised extraction, Cleaning", "Advised extraction, Consult", "BMP", "BMP Open Drain E", "Bonding Agent, Cleaning", "Bridge Cementation", "CCP", "CHECK UP", "CHECK UP, Ortho appointment", "CHECK UP, RETAINER", "CROWN CUTTING", "Calcium Hychoidl Placed", "Calcium Hychoidl Placed, ERIO", "Calcium Hychoidl Placed, GIC Filling", "Calcium Hychoidl Placed, RCT", "Cleaning", "Cleaning, Composite Filling", "Cleaning, Extraction", "Cleaning, GIC Filling", "Cleaning, Ortho appointment", "Composite", "Composite Filling", "Composite Filling, GIC Filling", "Composite Refilling", "Consult", "Consult + IOPA", "Consult Pedo", "Consult, Ortho appointment", "Consult, Plpectomy", "Crown + Composite + Consult", "Crown Cementation", "Crown Cementation, PFM", "Crown Recementation", "Crown Recementation, GIC Filling", "DC Done", "DENTURE", "DENTURE, IMPRESION", "DENTURE, Try In", "Debonding Done", "Debridement", "Denture Consult", "Diastema Closure", "Dycal + GIC Filling", "Dycal + GIC Filling, GIC Filling", "Dycal+ZOe", "Dycal+ZOe, GIC Filling", "ERCO", "ERCO, ZOe", "ERIO", "ERIO, ZOe", "Extraction", "Extraction 8", "Flexible Denture", "Frenectomy", "GIC Filling", "GIC Filling Done", "GIC Filling, Permanent", "GIC Filling, RCT Obturation Done", "GIC Filling, Refilling", "GIC Filling, ZOe", "Grinding", "IMPLANT CONSULT", "IMPRESION", "IMPRESION, RETAINER", "IPC", "Impression", "Irrigation", "Ketac Molar Filling", "Nightguard Delivered", "Nightguard Impression", "Opaidectomy Done", "Ortho", "Ortho Consult", "Ortho appointment", "Ortho appointment, RETAINER", "PFEM Bridge", "PFM Crown", "Pedo", "Pedo Space Maintainer + Pulpectomy E", "Perm Filling", "Plpectomy", "Plpectomy, Refilling", "Pulpectomy", "Pulpectomy ET", "Pulpotomy", "RCT", "RCT Ca(OH) Placed", "RCT Obturation Done", "RCT, RCT Obturation Done", "RCT, ZOe", "RETAINER", "Refilling Done", "S.S CROWN", "Scaling + Composite", "Scaling + GIC", "Scaling Done", "Surgeon Consult", "Suture Removal", "Temp Ae Filling", "Temp Refilling", "Try In", "ZOE", "ZOE Temp Done E", "ZOe", "metal Crown"];
 const DEFAULT_C=["Consultant"];
 const DPAGE=40, RPAGE=50;
+const STARTER_TREATMENTS=['Consult','Cleaning','Extraction','RCT','Composite Filling','Crown Cementation'];
 
 // HTML-escape any value before it enters innerHTML or an attribute.
 // Safe for text content AND for quoted attribute values.
@@ -635,6 +754,200 @@ function signInWithGoogle(){
 
 // Supabase returns the session in the URL fragment after an OAuth redirect.
 // Returns true if a fragment was present and handled (successfully or not).
+// AUTH.clinic was previously only ever set from optimistic local updates after
+// saveBranding()/uploadBrandLogo() — never from a real read of the clinics
+// table. That meant a freshly logged-in session never showed the saved logo.
+// Call this after login (and after onboarding/join) to fix that.
+async function fetchClinicDetails(){
+  if(!AUTH||!AUTH.clinic_id)return;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/clinics?select=name,logo_url,primary_color,secondary_color&id=eq.'+AUTH.clinic_id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+AUTH.access_token}});
+    const d=await r.json();
+    if(Array.isArray(d)&&d.length){AUTH.clinic=d[0];saveSession();}
+  }catch(e){/* keep whatever branding was already applied */}
+}
+
+let PENDING_AUTH=null;   // {access_token, refresh_token, user_id} for a signed-in user with no clinic yet
+const pHdrs=()=>({'apikey':SB_KEY,'Authorization':'Bearer '+PENDING_AUTH.access_token});
+
+// ---- onboarding: screen switching -----------------------------------------
+function onbShow(id){
+  ['onb-choice','onb-wizard','onb-join'].forEach(s=>document.getElementById(s).style.display=(s===id?'':'none'));
+  document.getElementById('onb-overlay').classList.add('show');
+}
+function onbGoChoice(){ onbShow('onb-choice'); }
+function onbGoWizard(){
+  onbShow('onb-wizard');
+  wizStep=1; wizDoctorName=''; wizClinicName=''; wizLogoDataUrl=null;
+  wizPin=''; wizPinConfirm=''; wizPinStage='enter';
+  wizTreatments=[...STARTER_TREATMENTS];
+  document.getElementById('onb-doctor-name').value='';
+  document.getElementById('onb-clinic-name').value='';
+  document.getElementById('onb-logo-preview').style.display='none';
+  document.getElementById('onb-logo-file').value='';
+  onbGoStep(1);
+}
+function onbGoJoin(){
+  onbShow('onb-join'); joinPin=''; document.getElementById('join-error').textContent='';
+  joinUpdateDots();
+}
+
+// ---- wizard step 1: doctor + clinic name -----------------------------------
+let wizStep=1, wizDoctorName='', wizClinicName='', wizLogoDataUrl=null;
+let wizPin='', wizPinConfirm='', wizPinStage='enter';
+let wizTreatments=[...STARTER_TREATMENTS];
+
+function onbValidateStep1(){
+  wizDoctorName=document.getElementById('onb-doctor-name').value.trim();
+  wizClinicName=document.getElementById('onb-clinic-name').value.trim();
+  document.getElementById('onb-next-1').disabled = !(wizDoctorName && wizClinicName);
+}
+
+function onbGoStep(n){
+  wizStep=n;
+  for(let i=1;i<=4;i++){
+    document.getElementById('onb-step-'+i).style.display=(i===n?'':'none');
+    document.getElementById('onb-p'+i).className=(i<=n?'done':'');
+  }
+  if(n===3){
+    wizPin=''; wizPinConfirm=''; wizPinStage='enter';
+    document.getElementById('onb-pin-title').textContent='Set a staff code';
+    document.getElementById('onb-pin-sub').textContent="Step 3 of 4 — share this 4-digit code with your team so they can join";
+    document.getElementById('onb-pin-error').textContent='';
+    onbUpdatePinDots();
+  }
+  if(n===4){
+    renderOnbTreatments();
+  }
+}
+
+// ---- wizard step 2: logo (optional) ----------------------------------------
+function onbLogoChange(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  if(file.size>1500000){alert('Logo too large — use an image under 1.5MB');input.value='';return}
+  const reader=new FileReader();
+  reader.onload=()=>{
+    wizLogoDataUrl=reader.result;
+    const p=document.getElementById('onb-logo-preview');
+    p.src=wizLogoDataUrl; p.style.display='';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ---- wizard step 3: PIN set, with a confirm pass ---------------------------
+function onbUpdatePinDots(){
+  const cur = wizPinStage==='enter' ? wizPin : wizPinConfirm;
+  for(let i=0;i<4;i++)document.getElementById('opd'+i).className='pin-dot'+(i<cur.length?' filled':'');
+}
+function onbPinPress(v){
+  let cur = wizPinStage==='enter' ? wizPin : wizPinConfirm;
+  if(v==='del'){cur=cur.slice(0,-1);}
+  else if(cur.length<4){cur+=v;}
+  if(wizPinStage==='enter')wizPin=cur; else wizPinConfirm=cur;
+  onbUpdatePinDots();
+  if(cur.length===4){
+    setTimeout(()=>{
+      if(wizPinStage==='enter'){
+        wizPinStage='confirm';
+        document.getElementById('onb-pin-title').textContent='Confirm the code';
+        document.getElementById('onb-pin-sub').textContent='Enter the same 4 digits again';
+        onbUpdatePinDots();
+      }else{
+        if(wizPin!==wizPinConfirm){
+          document.getElementById('onb-pin-error').textContent="Codes didn't match — try again";
+          wizPin=''; wizPinConfirm=''; wizPinStage='enter';
+          document.getElementById('onb-pin-title').textContent='Set a staff code';
+          document.getElementById('onb-pin-sub').textContent="Step 3 of 4 — share this 4-digit code with your team so they can join";
+          onbUpdatePinDots();
+        }else{
+          document.getElementById('onb-pin-error').textContent='';
+          onbGoStep(4);
+        }
+      }
+    },150);
+  }
+}
+
+// ---- wizard step 4: starter treatments -------------------------------------
+function renderOnbTreatments(){
+  document.getElementById('onb-treat-list').innerHTML = STARTER_TREATMENTS.map((t,i)=>
+    `<label class="onb-treat-item"><input type="checkbox" ${wizTreatments.includes(t)?'checked':''} onchange="onbToggleTreatment('${t.replace(/'/g,"\\'")}',this.checked)"/> ${H(t)}</label>`
+  ).join('');
+}
+function onbToggleTreatment(t,checked){
+  if(checked){ if(!wizTreatments.includes(t))wizTreatments.push(t); }
+  else{ wizTreatments=wizTreatments.filter(x=>x!==t); }
+}
+
+// ---- wizard submit: create the clinic --------------------------------------
+async function onbSubmitWizard(){
+  const btn=document.getElementById('onb-finish-btn');
+  btn.disabled=true; btn.textContent='Creating…';
+  document.getElementById('onb-wizard-error').textContent='';
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/rpc/create_clinic_with_owner',{
+      method:'POST',
+      headers:{...pHdrs(),'Content-Type':'application/json'},
+      body:JSON.stringify({
+        p_clinic_name:wizClinicName, p_doctor_name:wizDoctorName,
+        p_logo_url:wizLogoDataUrl, p_staff_pin:wizPin, p_treatments:wizTreatments
+      })
+    });
+    const clinicId=await r.json();
+    if(!r.ok){
+      document.getElementById('onb-wizard-error').textContent=(clinicId&&clinicId.message)||'Could not create your clinic — please try again';
+      btn.disabled=false; btn.textContent='Create my clinic'; return;
+    }
+    AUTH={access_token:PENDING_AUTH.access_token, refresh_token:PENDING_AUTH.refresh_token,
+          user_id:PENDING_AUTH.user_id, clinic_id:clinicId, role:'owner'};
+    saveSession();
+    await fetchClinicDetails();
+    PENDING_AUTH=null;
+    document.getElementById('onb-overlay').classList.remove('show');
+    applyBranding();
+    init();
+  }catch(e){
+    document.getElementById('onb-wizard-error').textContent='Connection error — please try again';
+    btn.disabled=false; btn.textContent='Create my clinic';
+  }
+}
+
+// ---- join with staff code ---------------------------------------------------
+let joinPin='';
+function joinUpdateDots(){for(let i=0;i<4;i++)document.getElementById('jpd'+i).className='pin-dot'+(i<joinPin.length?' filled':'')}
+function joinPinPress(v){
+  if(v==='del'){joinPin=joinPin.slice(0,-1);joinUpdateDots();return}
+  if(joinPin.length>=4)return;
+  joinPin+=v; joinUpdateDots();
+  if(joinPin.length===4)setTimeout(submitJoin,150);
+}
+async function submitJoin(){
+  document.getElementById('join-error').textContent='';
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/rpc/join_clinic_with_pin',{
+      method:'POST', headers:{...pHdrs(),'Content-Type':'application/json'},
+      body:JSON.stringify({p_pin:joinPin})
+    });
+    const d=await r.json();
+    if(!r.ok||!Array.isArray(d)||!d.length){
+      document.getElementById('join-error').textContent='Incorrect staff code — try again';
+      joinPin=''; joinUpdateDots(); return;
+    }
+    AUTH={access_token:PENDING_AUTH.access_token, refresh_token:PENDING_AUTH.refresh_token,
+          user_id:PENDING_AUTH.user_id, clinic_id:d[0].clinic_id, role:'assistant'};
+    saveSession();
+    await fetchClinicDetails();
+    PENDING_AUTH=null;
+    document.getElementById('onb-overlay').classList.remove('show');
+    applyBranding();
+    init();
+  }catch(e){
+    document.getElementById('join-error').textContent='Connection error — try again';
+    joinPin=''; joinUpdateDots();
+  }
+}
+
 async function handleOAuthRedirect(){
   const h=location.hash||'';
   if(h.indexOf('access_token')===-1&&h.indexOf('error')===-1)return false;
@@ -656,11 +969,14 @@ async function handleOAuthRedirect(){
     const mr=await fetch(SB_URL+'/rest/v1/clinic_members?select=clinic_id,role&user_id=eq.'+u.id,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+at}});
     const md=await mr.json();
     if(!Array.isArray(md)||!md.length){
-      showLogin('This Google account is not linked to a clinic yet. Please contact your administrator.');
+      PENDING_AUTH={access_token:at,refresh_token:rt,user_id:u.id};
+      document.getElementById('loading-screen').style.display='none';
+      onbGoChoice();
       return true;
     }
     AUTH={access_token:at,refresh_token:rt,user_id:u.id,clinic_id:md[0].clinic_id,role:md[0].role};
     saveSession();
+    await fetchClinicDetails();
     return true;
   }catch(e){
     showLogin('Connection error — please try again');
@@ -682,6 +998,7 @@ async function init(){
     const md=await mr.json();
     if(Array.isArray(md)&&md.length){AUTH.role=md[0].role;AUTH.clinic_id=md[0].clinic_id;saveSession();}
   }catch(e){/* keep whatever role the stored session has */}
+  await fetchClinicDetails();
   applyBranding();
   if('serviceWorker' in navigator){
     navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
