@@ -1278,7 +1278,18 @@ function cancelMerge(){mergeSelected=[];updateMergeBar();renderDir()}
 async function executeMerge(){
   if(mergeSelected.length!==2)return;
   const keep=patients[mergeSelected[0]],rem=patients[mergeSelected[1]];
-  if(!confirm('Merge "'+rem.name+'" into "'+keep.name+'"? Cannot be undone.'))return;
+  // Merging shouldn't silently discard data: if the record being deleted has
+  // gender/age/phone that the kept record is missing, carry it over first.
+  const fill={};
+  ['gender','age','phone'].forEach(f=>{ if(!keep[f]&&rem[f]) fill[f]=rem[f]; });
+  const fillSummary=Object.keys(fill).map(f=>f+': '+fill[f]).join(', ');
+  const msg='Merge "'+rem.name+'" into "'+keep.name+'"? Cannot be undone.'
+    + (fillSummary ? '\n\nWill also fill in on "'+keep.name+'": '+fillSummary : '');
+  if(!confirm(msg))return;
+  if(Object.keys(fill).length){
+    const r=await fetch(SB_URL+'/rest/v1/patients?id=eq.'+keep.id,{method:'PATCH',headers:SBH(),body:JSON.stringify(fill)});
+    if(r.ok)Object.assign(keep,fill);
+  }
   await fetch(SB_URL+'/rest/v1/visits?patient_name=ilike.'+encodeURIComponent(rem.name),{method:'PATCH',headers:SBH(),body:JSON.stringify({patient_name:keep.name})});
   await fetch(SB_URL+'/rest/v1/patients?pid=eq.'+rem.pid,{method:'DELETE',headers:SBH()});
   visits.forEach(v=>{if((v.patient_name||'').toLowerCase()===rem.name.toLowerCase())v.patient_name=keep.name});
