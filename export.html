@@ -4,11 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>Export Your Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--teal:#0d9488;--teal-d:#0a7970;--teal-l:#f0fdfa;--green:#059669;--red:#dc2626;--amber:#d97706;--muted:#6b7280;--border:#e4e8f0;--bg:#f4f6fb;--shadow:0 2px 8px rgba(0,0,0,.07)}
+:root{--teal:#2563ff;--teal-d:#0d1b3d;--teal-l:#eaf1ff;--green:#059669;--red:#dc2626;--amber:#d97706;--muted:#6b7280;--border:#e6eaf0;--bg:#fafbfd;--ink:#1f2937;--font-sans:'Inter',system-ui,-apple-system,sans-serif;--shadow:0 2px 8px rgba(13,27,61,.07)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:#1a1d2e;min-height:100vh}
-nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:56px;box-shadow:0 2px 12px rgba(13,148,136,.3)}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--ink);min-height:100vh}
+nav{background:linear-gradient(135deg,var(--teal),var(--teal-d));color:#fff;padding:0 16px;display:flex;align-items:center;gap:10px;height:56px;box-shadow:0 2px 12px rgba(37,99,255,.3)}
 nav .t{font-size:15px;font-weight:800}
 nav .s{font-size:11px;opacity:.85}
 nav a{margin-left:auto;color:#fff;text-decoration:none;font-size:12px;font-weight:700;border:1.5px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:8px}
@@ -35,7 +38,7 @@ p.note{font-size:12px;color:var(--muted);line-height:1.55}
 .spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .center{text-align:center;padding:36px 0}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1d2e;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:900}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:900}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{background:var(--red)}
 ul.what{list-style:none;font-size:12px;color:var(--muted);line-height:1.9}
