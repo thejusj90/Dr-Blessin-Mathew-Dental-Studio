@@ -206,6 +206,60 @@ nav::-webkit-scrollbar{display:none}
   .nav-tab{padding:5px 6px;font-size:9px}
   .stats{grid-template-columns:1fr 1fr}
 }
+
+/* Overview dashboard — scoped to avoid affecting clinic workflows */
+#page-overview{max-width:1440px;padding:16px 18px 22px}
+.ov-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.ov-kpi{display:flex;align-items:center;gap:15px;background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:20px 18px;box-shadow:var(--shadow);min-width:0}
+.ov-kpi-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;flex:none;background:#eef3ff}
+.ov-kpi-value{font-size:27px;font-weight:800;line-height:1;color:var(--teal);white-space:nowrap}
+.ov-kpi-label{font-size:12px;color:var(--muted);margin-top:6px;white-space:nowrap}
+.ov-kpi.green .ov-kpi-icon{background:#e8f8f2}.ov-kpi.green .ov-kpi-value{color:var(--green)}
+.ov-kpi.purple .ov-kpi-icon{background:#f0edff}.ov-kpi.purple .ov-kpi-value{color:var(--purple)}
+.ov-kpi.amber .ov-kpi-icon{background:#fff4dc}.ov-kpi.amber .ov-kpi-value{color:var(--amber)}
+.ov-panel{background:#fff;border:1.5px solid var(--border);border-radius:18px;box-shadow:var(--shadow);margin-bottom:18px}
+.ov-filter-card{padding:18px 20px;display:grid;grid-template-columns:1.55fr .8fr .8fr auto;gap:18px;align-items:end}
+.ov-field-label{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.35px;text-transform:uppercase;margin-bottom:9px}
+.ov-range{display:grid;grid-template-columns:repeat(5,1fr);border:1.5px solid var(--border);border-radius:11px;overflow:hidden}
+.ov-range button{border:0;border-right:1px solid var(--border);background:#fff;padding:13px 10px;color:var(--muted);font:700 12px var(--font-sans);cursor:pointer;white-space:nowrap}
+.ov-range button:last-child{border-right:0}.ov-range button.active{background:var(--teal);color:#fff}
+.ov-select{height:45px;font-size:13px;font-weight:600}
+.ov-clear{height:45px;padding:0 4px;border:0;background:none;color:var(--teal);font:700 12px var(--font-sans);cursor:pointer;white-space:nowrap}
+.ov-chart-card{overflow:hidden}
+.ov-chart-head{padding:18px 20px 10px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.ov-chart-head h2,.ov-rank-head h2{font-size:17px;font-weight:800}
+.ov-metrics{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;min-width:510px}
+.ov-metrics button{border:0;border-right:1px solid var(--border);background:#f8fafc;padding:11px 14px;font:700 12px var(--font-sans);color:var(--muted);cursor:pointer;white-space:nowrap}
+.ov-metrics button:last-child{border-right:0}.ov-metrics button.active{background:var(--teal);color:#fff}
+.ov-chart{min-height:330px;padding:20px 24px 0;display:flex;align-items:flex-end}
+.ov-bars{width:100%;height:250px;display:flex;align-items:flex-end;gap:8px;padding:0 4px 30px;border-bottom:1px solid var(--border)}
+.ov-bar{flex:1;min-width:20px;height:100%;display:flex;align-items:flex-end;position:relative;cursor:pointer}
+.ov-bar-fill{width:100%;min-height:4px;border-radius:6px 6px 0 0;background:var(--teal);transition:height .25s}
+.ov-bar-label{position:absolute;left:50%;bottom:-23px;transform:translateX(-50%);font-size:9px;color:var(--muted);white-space:nowrap}
+.ov-bar-tip{display:none;position:absolute;z-index:5;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:7px 9px;border-radius:7px;font-size:10px;white-space:nowrap}
+.ov-bar:hover .ov-bar-tip,.ov-bar:focus .ov-bar-tip{display:block}
+.ov-empty{margin:auto;text-align:center;color:var(--muted);font-size:13px}
+.ov-totals{border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);padding:15px 20px}
+.ov-total{padding:0 18px;border-right:1px solid var(--border);font-size:11px;color:var(--muted)}
+.ov-total:first-child{padding-left:0}.ov-total:last-child{border:0}.ov-total strong{display:block;font-size:16px;color:var(--ink);margin-top:4px}
+.ov-lower{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ov-rank{min-height:210px;padding-bottom:10px}
+.ov-rank-head{display:flex;justify-content:space-between;align-items:center;padding:17px 20px;border-bottom:1px solid var(--border)}
+.ov-rank-head span{font-size:11px;color:var(--teal);font-weight:700}
+.ov-rank-list{padding:13px 20px}
+.ov-rank-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:9px 0;border-bottom:1px solid #f0f2f6}
+.ov-rank-row:last-child{border:0}.ov-rank-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov-rank-sub{font-size:10px;color:var(--muted);margin-top:2px}.ov-rank-value{text-align:right;font-size:12px;font-weight:800}
+.ov-note{text-align:center;color:var(--muted);font-size:11px;margin:2px 0 4px}
+@media(max-width:1000px){.ov-kpis{grid-template-columns:repeat(3,1fr)}.ov-filter-card{grid-template-columns:1fr 1fr}.ov-clear{justify-self:start}.ov-chart-head{align-items:flex-start;flex-direction:column}.ov-metrics{width:100%;min-width:0}}
+@media(max-width:600px){
+ #page-overview{padding:10px 10px 88px}
+ .ov-kpis{grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}.ov-kpi{padding:13px 11px;gap:9px;border-radius:14px}.ov-kpi-icon{width:36px;height:36px;font-size:17px}.ov-kpi-value{font-size:20px}.ov-kpi-label{font-size:9px}
+ .ov-kpis .ov-kpi:first-child{grid-column:1/-1}.ov-filter-card{padding:14px;grid-template-columns:1fr;gap:13px}.ov-range{overflow-x:auto;display:flex}.ov-range button{flex:1;min-width:82px;padding:11px 8px}
+ .ov-chart-head{padding:15px 14px 8px;gap:12px}.ov-metrics{display:flex;overflow-x:auto}.ov-metrics button{min-width:128px;padding:10px}
+ .ov-chart{min-height:255px;padding:12px 12px 0;overflow-x:auto}.ov-bars{min-width:520px;height:205px;gap:6px}.ov-totals{grid-template-columns:1fr 1fr;gap:13px;padding:14px}.ov-total{padding:0;border:0}.ov-total strong{font-size:14px}
+ .ov-lower{grid-template-columns:1fr;gap:11px}.ov-panel{border-radius:14px;margin-bottom:11px}.ov-rank{min-height:170px}
+}
 </style>
 </head>
 <body>
@@ -520,26 +574,40 @@ nav::-webkit-scrollbar{display:none}
 
 <!-- OVERVIEW -->
 <div class="page" id="page-overview">
-  <div class="stats" id="ov-stats"></div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
-    <div class="card" style="grid-column:1/-1">
-      <div class="card-header">
-        <div class="card-title">Monthly Activity</div>
-        <div class="ctabs">
-          <button class="ctab active" onclick="setChartMode('visits',this)">Visits</button>
-          <button class="ctab" onclick="setChartMode('clinic_share',this)">Clinic ₹</button>
-          <button class="ctab" onclick="setChartMode('cons_fee',this)">Dr Fees</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="year-tabs" id="year-tabs"></div>
-        <div class="chart-bars" id="chart-bars"></div>
-        <div id="chart-totals" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:30px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)"></div>
+  <div class="ov-kpis" id="ov-stats"></div>
+  <section class="ov-panel ov-filter-card" aria-label="Overview filters">
+    <div>
+      <div class="ov-field-label">Date range</div>
+      <div class="ov-range" id="ov-range">
+        <button onclick="setOvRange('month',this)">This month</button>
+        <button onclick="setOvRange('3m',this)">3 months</button>
+        <button onclick="setOvRange('6m',this)">6 months</button>
+        <button onclick="setOvRange('year',this)">This year</button>
+        <button class="active" onclick="setOvRange('all',this)">All time</button>
       </div>
     </div>
-    <div class="card"><div class="card-header"><div class="card-title">Top Treatments</div></div><div class="card-body" id="ov-treatments"></div></div>
-    <div class="card"><div class="card-header"><div class="card-title">Consultants</div></div><div class="card-body" id="ov-consultants"></div></div>
+    <div><div class="ov-field-label">Treatment</div><select class="ov-select" id="ov-treatment" onchange="renderOverview()"><option value="">All treatments</option></select></div>
+    <div><div class="ov-field-label">Consultant</div><select class="ov-select" id="ov-consultant" onchange="renderOverview()"><option value="">All consultants</option></select></div>
+    <button class="ov-clear" onclick="clearOvFilters()">↻ Clear filters</button>
+  </section>
+  <section class="ov-panel ov-chart-card">
+    <div class="ov-chart-head">
+      <h2>Monthly Activity</h2>
+      <div class="ov-metrics">
+        <button class="active" onclick="setChartMode('visits',this)">Visits</button>
+        <button onclick="setChartMode('clinic_share',this)">Clinic Revenue</button>
+        <button onclick="setChartMode('cons_fee',this)">Consultant Fees</button>
+        <button onclick="setChartMode('lab_cost',this)">Lab Costs</button>
+      </div>
+    </div>
+    <div class="ov-chart" id="ov-chart"><div class="ov-empty">Loading activity…</div></div>
+    <div class="ov-totals" id="chart-totals"></div>
+  </section>
+  <div class="ov-lower">
+    <section class="ov-panel ov-rank"><div class="ov-rank-head"><h2>Top Treatments</h2><span>Ranked by visits</span></div><div class="ov-rank-list" id="ov-treatments"></div></section>
+    <section class="ov-panel ov-rank"><div class="ov-rank-head"><h2>Consultants</h2><span>Visits &amp; fees</span></div><div class="ov-rank-list" id="ov-consultants"></div></section>
   </div>
+  <p class="ov-note">Financial details are visible only in PIN-protected doctor mode.</p>
 </div>
 
 <!-- SETTINGS -->
@@ -1450,45 +1518,93 @@ function downloadExcel(s){
 }
 
 // ── OVERVIEW ──
-let chartMode='visits',chartYear='all';
-const CC={visits:'#2563ff',clinic_share:'#059669',cons_fee:'#5b4fcf'};
+let chartMode='visits',ovRange='all';
+const CC={visits:'#2563ff',clinic_share:'#059669',cons_fee:'#5b4fcf',lab_cost:'#d97706'};
 const MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function setChartMode(m,btn){chartMode=m;document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChart()}
-function setChartYear(y,btn){chartYear=y;document.querySelectorAll('.ytab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderChart()}
-function renderChart(){
-  const monthly={};
-  visits.forEach(v=>{if(!v.visit_date)return;const ym=v.visit_date.slice(0,7);if(!monthly[ym])monthly[ym]={visits:0,clinic_share:0,cons_fee:0};monthly[ym].visits++;monthly[ym].clinic_share+=parseFloat(v.clinic_share)||0;monthly[ym].cons_fee+=parseFloat(v.cons_fee)||0});
-  const months=Object.keys(monthly).sort().filter(m=>chartYear==='all'||m.startsWith(chartYear));
-  const maxV=Math.max(...months.map(m=>monthly[m][chartMode]||0),1);
-  document.getElementById('chart-bars').innerHTML=months.map(m=>{
-    const val=monthly[m][chartMode]||0,pct=(val/maxV*100).toFixed(1);
-    const mo=MO[parseInt(m.slice(5))-1],yr=m.slice(2,4);
-    return `<div class="bar-col"><div class="bar-tip">${mo} 20${yr}<br>Visits:${monthly[m].visits}<br>Clinic:₹${(monthly[m].clinic_share||0).toLocaleString('en-IN')}</div>
-      <div class="bar-rect" style="background:${CC[chartMode]};height:${pct}%"></div>
-      <div class="bar-lbl">${mo}'${yr}</div></div>`;
-  }).join('');
-  const tot=months.reduce((a,m)=>({v:a.v+monthly[m].visits,c:a.c+monthly[m].clinic_share,f:a.f+monthly[m].cons_fee}),{v:0,c:0,f:0});
-  document.getElementById('chart-totals').innerHTML=`<span>${chartYear==='all'?'All time':'Year '+chartYear}: <strong>${tot.v}</strong> visits</span><span>Clinic: <strong style="color:var(--green)">₹${tot.c.toLocaleString('en-IN')}</strong></span><span>Dr Fees: <strong style="color:var(--purple)">₹${tot.f.toLocaleString('en-IN')}</strong></span>`;
+function ovMoney(n){return '₹'+Math.round(Number(n)||0).toLocaleString('en-IN')}
+function setChartMode(m,btn){chartMode=m;document.querySelectorAll('.ov-metrics button').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');renderChart(ovFiltered())}
+function setOvRange(r,btn){ovRange=r;document.querySelectorAll('#ov-range button').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');renderOverview()}
+function clearOvFilters(){
+  ovRange='all';
+  document.querySelectorAll('#ov-range button').forEach(function(b){b.classList.toggle('active',b.textContent.trim()==='All time')});
+  document.getElementById('ov-treatment').value='';
+  document.getElementById('ov-consultant').value='';
+  renderOverview();
+}
+function ovStartDate(){
+  var d=new Date(),s=null;
+  if(ovRange==='month')s=new Date(d.getFullYear(),d.getMonth(),1);
+  if(ovRange==='3m')s=new Date(d.getFullYear(),d.getMonth()-2,1);
+  if(ovRange==='6m')s=new Date(d.getFullYear(),d.getMonth()-5,1);
+  if(ovRange==='year')s=new Date(d.getFullYear(),0,1);
+  return s;
+}
+function ovFiltered(){
+  var start=ovStartDate();
+  var treatment=document.getElementById('ov-treatment').value;
+  var consultant=document.getElementById('ov-consultant').value;
+  return visits.filter(function(v){
+    var dt=v.visit_date?new Date(v.visit_date+'T00:00:00'):null;
+    return (!start||(dt&&!isNaN(dt)&&dt>=start))&&(!treatment||v.treatment===treatment)&&(!consultant||v.consultant===consultant);
+  });
+}
+function ovFillSelect(id,values,placeholder){
+  var el=document.getElementById(id),old=el.value;
+  el.innerHTML='<option value="">'+placeholder+'</option>'+values.map(function(v){return '<option value="'+H(v)+'">'+H(v)+'</option>'}).join('');
+  if(values.indexOf(old)>=0)el.value=old;
+}
+function renderChart(data){
+  data=data||ovFiltered();
+  var monthly={};
+  data.forEach(function(v){
+    if(!v.visit_date)return;
+    var ym=v.visit_date.slice(0,7);
+    if(!monthly[ym])monthly[ym]={visits:0,clinic_share:0,cons_fee:0,lab_cost:0};
+    monthly[ym].visits++;
+    monthly[ym].clinic_share+=parseFloat(v.clinic_share)||0;
+    monthly[ym].cons_fee+=parseFloat(v.cons_fee)||0;
+    monthly[ym].lab_cost+=parseFloat(v.lab_cost)||0;
+  });
+  var months=Object.keys(monthly).sort();
+  var shown=months.slice(-12);
+  var chart=document.getElementById('ov-chart');
+  if(!shown.length){chart.innerHTML='<div class="ov-empty">No activity for this filter combination.</div>'}
+  else{
+    var maxV=Math.max.apply(null,shown.map(function(m){return monthly[m][chartMode]||0}).concat([1]));
+    chart.innerHTML='<div class="ov-bars">'+shown.map(function(m){
+      var val=monthly[m][chartMode]||0,pct=Math.max(2,val/maxV*100);
+      var label=MO[parseInt(m.slice(5),10)-1]+"'"+m.slice(2,4);
+      var display=chartMode==='visits'?val:ovMoney(val);
+      return '<div class="ov-bar" tabindex="0"><div class="ov-bar-tip">'+H(label)+' · '+display+'</div><div class="ov-bar-fill" style="background:'+CC[chartMode]+';height:'+pct.toFixed(1)+'%"></div><div class="ov-bar-label">'+H(label)+'</div></div>';
+    }).join('')+'</div>';
+  }
+  var totals=data.reduce(function(a,v){a.v++;a.c+=parseFloat(v.clinic_share)||0;a.f+=parseFloat(v.cons_fee)||0;a.l+=parseFloat(v.lab_cost)||0;return a},{v:0,c:0,f:0,l:0});
+  document.getElementById('chart-totals').innerHTML='<div class="ov-total">Total Visits<strong>'+totals.v+'</strong></div><div class="ov-total">Clinic Revenue<strong style="color:var(--green)">'+ovMoney(totals.c)+'</strong></div><div class="ov-total">Consultant Fees<strong style="color:var(--purple)">'+ovMoney(totals.f)+'</strong></div><div class="ov-total">Lab Costs<strong style="color:var(--amber)">'+ovMoney(totals.l)+'</strong></div>';
 }
 function renderOverview(){
-  const tC=visits.reduce((s,v)=>s+(parseFloat(v.clinic_share)||0),0);
-  const tF=visits.reduce((s,v)=>s+(parseFloat(v.cons_fee)||0),0);
-  const tL=visits.reduce((s,v)=>s+(parseFloat(v.lab_cost)||0),0);
-  document.getElementById('ov-stats').innerHTML=`
-    <div class="stat"><div class="val">${patients.length}</div><div class="lbl">Patients</div></div>
-    <div class="stat"><div class="val">${visits.length}</div><div class="lbl">Visits</div></div>
-    <div class="stat green"><div class="val">₹${(tC/100000).toFixed(1)}L</div><div class="lbl">Clinic Revenue</div></div>
-    <div class="stat purple"><div class="val">₹${(tF/100000).toFixed(1)}L</div><div class="lbl">Dr Fees</div></div>
-    <div class="stat amber"><div class="val">₹${(tL/1000).toFixed(0)}K</div><div class="lbl">Lab Costs</div></div>`;
-  const years=[...new Set(visits.filter(v=>v.visit_date).map(v=>v.visit_date.slice(0,4)))].sort();
-  document.getElementById('year-tabs').innerHTML=`<button class="ytab active" onclick="setChartYear('all',this)">All</button>`+years.map(y=>`<button class="ytab" onclick="setChartYear('${y}',this)">${y}</button>`).join('');
-  const tc={};visits.forEach(v=>{if(v.treatment)tc[v.treatment]=(tc[v.treatment]||0)+1});
-  const tt=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,10);const mt=tt[0]?.[1]||1;
-  document.getElementById('ov-treatments').innerHTML=tt.map(([t,n])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px">${t}</span><span style="color:var(--muted);font-weight:700">${n}</span></div><div style="background:var(--border);border-radius:3px;height:4px"><div style="background:var(--teal);border-radius:3px;height:4px;width:${(n/mt*100).toFixed(0)}%"></div></div></div>`).join('');
-  const cc={};visits.forEach(v=>{if(v.consultant&&!/^\d+$/.test(v.consultant.trim()))cc[v.consultant]=(cc[v.consultant]||0)+1});
-  const ct=Object.entries(cc).sort((a,b)=>b[1]-a[1]);const mc=ct[0]?.[1]||1;
-  document.getElementById('ov-consultants').innerHTML=ct.map(([c,n])=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>${c}</span><span style="color:var(--muted);font-weight:700">${n}</span></div><div style="background:var(--border);border-radius:3px;height:4px"><div style="background:var(--purple);border-radius:3px;height:4px;width:${(n/mc*100).toFixed(0)}%"></div></div></div>`).join('');
-  renderChart();
+  var treatments=[...new Set(visits.map(function(v){return v.treatment}).filter(Boolean))].sort();
+  var consultants=[...new Set(visits.map(function(v){return v.consultant}).filter(function(v){return v&&!/^\d+$/.test(String(v).trim())}))].sort();
+  ovFillSelect('ov-treatment',treatments,'All treatments');
+  ovFillSelect('ov-consultant',consultants,'All consultants');
+  var data=ovFiltered(),tC=0,tF=0,tL=0;
+  data.forEach(function(v){tC+=parseFloat(v.clinic_share)||0;tF+=parseFloat(v.cons_fee)||0;tL+=parseFloat(v.lab_cost)||0});
+  var unfiltered=ovRange==='all'&&!document.getElementById('ov-treatment').value&&!document.getElementById('ov-consultant').value;
+  var patientCount=unfiltered?patients.length:new Set(data.map(function(v){return v.patient_name}).filter(Boolean)).size;
+  document.getElementById('ov-stats').innerHTML=
+    '<div class="ov-kpi"><div class="ov-kpi-icon">♟</div><div><div class="ov-kpi-value">'+patientCount+'</div><div class="ov-kpi-label">Patients</div></div></div>'+
+    '<div class="ov-kpi"><div class="ov-kpi-icon">↗</div><div><div class="ov-kpi-value">'+data.length+'</div><div class="ov-kpi-label">Visits</div></div></div>'+
+    '<div class="ov-kpi green"><div class="ov-kpi-icon">₹</div><div><div class="ov-kpi-value">'+ovMoney(tC)+'</div><div class="ov-kpi-label">Clinic Revenue</div></div></div>'+
+    '<div class="ov-kpi purple"><div class="ov-kpi-icon">♙</div><div><div class="ov-kpi-value">'+ovMoney(tF)+'</div><div class="ov-kpi-label">Consultant Fees</div></div></div>'+
+    '<div class="ov-kpi amber"><div class="ov-kpi-icon">⚗</div><div><div class="ov-kpi-value">'+ovMoney(tL)+'</div><div class="ov-kpi-label">Lab Costs</div></div></div>';
+  var tc={};
+  data.forEach(function(v){if(v.treatment)tc[v.treatment]=(tc[v.treatment]||0)+1});
+  var tt=Object.entries(tc).sort(function(a,b){return b[1]-a[1]}).slice(0,8);
+  document.getElementById('ov-treatments').innerHTML=tt.length?tt.map(function(x,i){return '<div class="ov-rank-row"><div><div class="ov-rank-name">'+(i+1)+'. '+H(x[0])+'</div><div class="ov-rank-sub">'+x[1]+' visit'+(x[1]===1?'':'s')+'</div></div><div class="ov-rank-value">'+x[1]+'</div></div>'}).join(''):'<div class="ov-empty">No treatments in this period.</div>';
+  var cc={};
+  data.forEach(function(v){if(v.consultant&&!/^\d+$/.test(String(v.consultant).trim())){if(!cc[v.consultant])cc[v.consultant]={n:0,f:0};cc[v.consultant].n++;cc[v.consultant].f+=parseFloat(v.cons_fee)||0}});
+  var ct=Object.entries(cc).sort(function(a,b){return b[1].n-a[1].n});
+  document.getElementById('ov-consultants').innerHTML=ct.length?ct.map(function(x){return '<div class="ov-rank-row"><div><div class="ov-rank-name">'+H(x[0])+'</div><div class="ov-rank-sub">'+x[1].n+' visit'+(x[1].n===1?'':'s')+'</div></div><div class="ov-rank-value" style="color:var(--purple)">'+ovMoney(x[1].f)+'</div></div>'}).join(''):'<div class="ov-empty">No consultant visits in this period.</div>';
+  renderChart(data);
 }
 
 // ── SETTINGS ──
