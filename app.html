@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#2563ff"/>
+<script>
+// OAuth tokens belong in memory, never in the visible/shareable URL.
+if(location.hash && (location.hash.includes('access_token=') || location.hash.includes('error='))){
+  sessionStorage.setItem('dentmemo_oauth_fragment',location.hash);
+  history.replaceState(null,'',location.pathname+location.search);
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -758,7 +765,18 @@ function applyBranding(){
   const logoSrc=c.logo_url||DEFAULT_LOGO;
   document.querySelectorAll('.nav-logo img, #login-logo, #loading-screen img, .pin-box img').forEach(el=>{el.src=logoSrc;el.style.display='';});
 }
-function doLogout(){clearSession();location.reload()}
+async function doLogout(){
+  const token=AUTH&&AUTH.access_token;
+  try{
+    if(token)await fetch(SB_URL+'/auth/v1/logout',{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+token}
+    });
+  }catch(e){/* local logout must still complete if offline */}
+  clearSession();
+  sessionStorage.removeItem('dentmemo_oauth_fragment');
+  location.replace(location.pathname);
+}
 
 // ---- Google sign-in ----------------------------------------------------
 function signInWithGoogle(){
@@ -970,10 +988,11 @@ async function submitJoin(){
 }
 
 async function handleOAuthRedirect(){
-  const h=location.hash||'';
+  const h=sessionStorage.getItem('dentmemo_oauth_fragment')||location.hash||'';
   if(h.indexOf('access_token')===-1&&h.indexOf('error')===-1)return false;
+  sessionStorage.removeItem('dentmemo_oauth_fragment');
   const p=new URLSearchParams(h.substring(1));
-  history.replaceState(null,'',location.pathname);   // strip tokens from the URL bar
+  history.replaceState(null,'',location.pathname+location.search);
 
   if(p.get('error')){
     showLogin(p.get('error_description')||'Google sign-in was cancelled');
