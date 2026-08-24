@@ -1,0 +1,10 @@
+.env
+prospect-engine/.env
+prospect-engine/data/*.db*
+prospect-engine/data/output/*
+prospect-engine/data/raw/*
+prospect-engine/data/checkpoints/*
+__pycache__/
+.pytest_cache/
+*.pyc
+
