@@ -1,0 +1,26 @@
+prospect:
+  google_confirmed: 20
+  google_probable: 10
+  owner_high: 20
+  owner_medium: 15
+  website: 10
+  phone: 10
+  email: 5
+  instagram: 5
+  facebook: 3
+  linkedin: 2
+  identity_high: 10
+  multiple_sources: 5
+  no_clinic: -10
+  identity_low: -20
+identity:
+  exact_name: 30
+  same_city: 20
+  same_state: 10
+  dentist_profession: 15
+  two_clinic_sources: 20
+  registration_match: 40
+  conflicting_city: -25
+  conflicting_profession: -40
+segments: {a: 75, b: 55, c: 35}
+
