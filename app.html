@@ -782,38 +782,57 @@ function rebuildStats(){
   });
 }
 
+// Fetch database rows without silently treating permission/network errors as empty data.
+async function fetchRows(url,headers,label){
+  let response;
+  try{
+    response=await fetch(url,{headers});
+  }catch(error){
+    throw new Error(label+' connection failed: '+(error.message||'network unavailable'));
+  }
+  let data;
+  try{data=await response.json()}catch(error){
+    throw new Error(label+' returned an unreadable response (HTTP '+response.status+')');
+  }
+  if(!response.ok){
+    const detail=data && (data.message||data.error_description||data.code||data.error);
+    throw new Error(label+' failed (HTTP '+response.status+')'+(detail?': '+String(detail):''));
+  }
+  if(!Array.isArray(data))throw new Error(label+' returned unexpected data');
+  return data;
+}
+
 async function loadData(){
   const h=SBH();
-  // Load patients (exclude SETTINGS)
+  // Stage results locally, so a failed request cannot overwrite valid loaded data.
   let allP=[],off=0;
   while(true){
-    const r=await fetch(SB_URL+'/rest/v1/patients?select=id,pid,name,gender,age,phone&pid=neq.SETTINGS&order=pid.asc',{headers:{...h,'Range':off+'-'+(off+999)}});
-    const d=await r.json();
-    if(!Array.isArray(d)||!d.length)break;
-    allP=[...allP,...d];if(d.length<1000)break;off+=1000;
+    const d=await fetchRows(SB_URL+'/rest/v1/patients?select=id,pid,name,gender,age,phone&pid=neq.SETTINGS&order=pid.asc',{...h,'Range':off+'-'+(off+999)},'Patients');
+    allP.push(...d);
+    if(d.length<1000)break;
+    off+=1000;
   }
-  patients=allP;
 
-  // Load SETTINGS for treatments/consultants
-  const sr=await fetch(SB_URL+'/rest/v1/patients?pid=eq.SETTINGS&select=age,phone',{headers:h});
-  const sd=await sr.json();
-  if(Array.isArray(sd)&&sd.length){
-    try{if(sd[0].age)allTreatments=JSON.parse(sd[0].age)}catch(e){}
-    try{if(sd[0].phone)allConsultants=JSON.parse(sd[0].phone)}catch(e){}
-  }else if(AUTH&&AUTH.clinic_id){
-    await fetch(SB_URL+'/rest/v1/patients',{method:'POST',headers:SBH(),body:JSON.stringify({pid:'SETTINGS',name:'SETTINGS',clinic_id:AUTH.clinic_id,age:JSON.stringify(DEFAULT_T),phone:JSON.stringify(DEFAULT_C)})});
+  // SETTINGS are optional for the records display; do not create/overwrite them during reads.
+  const sd=await fetchRows(SB_URL+'/rest/v1/patients?pid=eq.SETTINGS&select=age,phone',h,'Clinic settings');
+  let nextTreatments=[...DEFAULT_T],nextConsultants=[...DEFAULT_C];
+  if(sd.length){
+    try{if(sd[0].age)nextTreatments=JSON.parse(sd[0].age)}catch(error){console.warn('Invalid treatment settings',error)}
+    try{if(sd[0].phone)nextConsultants=JSON.parse(sd[0].phone)}catch(error){console.warn('Invalid consultant settings',error)}
   }
-  rebuildDropdowns();
 
-  // Load visits
   let allV=[],voff=0;
   while(true){
-    const r=await fetch(SB_URL+'/rest/v1/visits_safe?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc',{headers:{...h,'Range':voff+'-'+(voff+999)}});
-    const d=await r.json();
-    if(!Array.isArray(d)||!d.length)break;
-    allV=[...allV,...d];if(d.length<1000)break;voff+=1000;
+    const d=await fetchRows(SB_URL+'/rest/v1/visits_safe?select=id,patient_name,visit_date,age,gender,phone,diagnosis,treatment,consultant,cons_fee,clinic_share,lab_cost,remarks&order=visit_date.desc',{...h,'Range':voff+'-'+(voff+999)},'Visits');
+    allV.push(...d);
+    if(d.length<1000)break;
+    voff+=1000;
   }
+  patients=allP;
   visits=allV;
+  allTreatments=Array.isArray(nextTreatments)?nextTreatments:[...DEFAULT_T];
+  allConsultants=Array.isArray(nextConsultants)?nextConsultants:[...DEFAULT_C];
+  rebuildDropdowns();
   rebuildStats();
 }
 
@@ -1159,7 +1178,8 @@ async function init(){
     applyRec();
     showToast('✓ Data loaded - '+patients.length+' patients','success');
   }catch(e){
-    showToast('Connection error - pull down to refresh','error');
+    console.error('Unable to load clinic data',e);
+    showToast('Unable to load data: '+(e&&e.message?e.message:'Connection error'),'error');
   }
 }
 
